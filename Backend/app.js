@@ -68,16 +68,28 @@
 
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const { Pool } = require("pg");
 const adminRoutes = require("./routes/adminRoutes");
+const authRoutes = require("./routes/authRoutes");
+const vendorRoutes = require("./routes/vendorRoutes");
+const managerRoutes = require("./routes/managerRoutes");
 require("dotenv").config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/vendor", vendorRoutes);
+app.use("/api/manager", managerRoutes);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -100,10 +112,65 @@ const initDB = async () => {
         client = await pool.connect(); 
         console.log("✅ Connected to Neon database successfully");
 
-    } catch (err) {
-        console.error("❌ Database connection error:", err);
-    } finally {
+        // Conditionally create tables if they do not exist
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                first_name VARCHAR(100),
+                last_name VARCHAR(100),
+                email VARCHAR(150) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                role VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS vendors (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                company_name VARCHAR(150),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS jobs (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(150) NOT NULL,
+                department VARCHAR(100),
+                location VARCHAR(100),
+                status VARCHAR(50) DEFAULT 'Active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS job_vendors (
+                job_id INTEGER REFERENCES jobs(id),
+                vendor_id INTEGER REFERENCES vendors(id),
+                PRIMARY KEY (job_id, vendor_id)
+            );
+        `);
+
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS candidates (
+                id SERIAL PRIMARY KEY,
+                first_name VARCHAR(100) NOT NULL,
+                last_name VARCHAR(100) NOT NULL,
+                email VARCHAR(150) UNIQUE NOT NULL,
+                phone VARCHAR(50),
+                job_id INTEGER REFERENCES jobs(id),
+                vendor_id INTEGER REFERENCES vendors(id),
+                status VARCHAR(50) DEFAULT 'Pending Review',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        console.log("✅ Database tables verified/created");
+    } catch (err) {
+        console.error("❌ Database connection/setup error:", err);
+    } finally {
         if (client) client.release();
     }
 };
