@@ -214,11 +214,25 @@
   transition: width 1s var(--ease);
 }
 
-.pipeline-bar-fill.submitted { background: linear-gradient(90deg, var(--navy-500), var(--navy-400)); }
-.pipeline-bar-fill.screened { background: linear-gradient(90deg, var(--info), #60a5fa); }
-.pipeline-bar-fill.interview { background: linear-gradient(90deg, var(--warning), #fbbf24); }
-.pipeline-bar-fill.offered { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-400)); }
-.pipeline-bar-fill.hired { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+.pipeline-bar-fill.submitted {
+  background: linear-gradient(90deg, var(--navy-500), var(--navy-400));
+}
+
+.pipeline-bar-fill.screened {
+  background: linear-gradient(90deg, var(--info), #60a5fa);
+}
+
+.pipeline-bar-fill.interview {
+  background: linear-gradient(90deg, var(--warning), #fbbf24);
+}
+
+.pipeline-bar-fill.offered {
+  background: linear-gradient(90deg, var(--emerald-500), var(--emerald-400));
+}
+
+.pipeline-bar-fill.hired {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
 
 .pipeline-count {
   width: 36px;
@@ -253,14 +267,37 @@
   flex-shrink: 0;
 }
 
-.activity-dot.green { background: var(--emerald-500); }
-.activity-dot.blue { background: var(--info); }
-.activity-dot.orange { background: var(--warning); }
-.activity-dot.red { background: var(--danger); }
+.activity-dot.green {
+  background: var(--emerald-500);
+}
 
-.activity-text { flex: 1; }
-.activity-text p { font-size: 13px; color: var(--text-primary); margin: 0; line-height: 1.5; }
-.activity-text span { font-size: 12px; color: var(--text-muted); }
+.activity-dot.blue {
+  background: var(--info);
+}
+
+.activity-dot.orange {
+  background: var(--warning);
+}
+
+.activity-dot.red {
+  background: var(--danger);
+}
+
+.activity-text {
+  flex: 1;
+}
+
+.activity-text p {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.activity-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
 
 /* Page Header */
 .page-header {
@@ -272,8 +309,18 @@
   gap: 16px;
 }
 
-.page-header-left h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.page-header-left p { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; }
+.page-header-left h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.page-header-left p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
 
 .page-header-actions {
   display: flex;
@@ -315,9 +362,17 @@
 }
 
 /* Vendor Performance */
-.vendor-perf-list { display: flex; flex-direction: column; gap: 16px; }
+.vendor-perf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-.vendor-perf-item { display: flex; align-items: center; gap: 14px; }
+.vendor-perf-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
 .vendor-perf-avatar {
   width: 40px;
@@ -333,8 +388,16 @@
   flex-shrink: 0;
 }
 
-.vendor-perf-info { flex: 1; }
-.vendor-perf-info h4 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 4px; }
+.vendor-perf-info {
+  flex: 1;
+}
+
+.vendor-perf-info h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
 
 .vendor-perf-bar {
   width: 100%;
@@ -360,15 +423,38 @@
 }
 
 @media (max-width: 1200px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .dashboard-grid { grid-template-columns: 1fr; }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .dashboard-main-content { margin-left: 0 !important; }
-  .dashboard-page { padding: 20px 16px; }
-  .stats-row { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; align-items: flex-start; }
-  .filter-bar { flex-direction: column; }
-  .filter-bar .search-bar { width: 100%; }
+  .dashboard-main-content {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-page {
+    padding: 20px 16px;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-bar .search-bar {
+    width: 100%;
+  }
 }
