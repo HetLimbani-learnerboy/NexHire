@@ -211,7 +211,7 @@ function LandingPage() {
                         </p>
                     </div>
 
-                    <div className="mini-box book-now">
+                    <div className="book-now">
                         <h3>Book Demo</h3>
                         <p>
                             Experience enterprise ATS workflow today.
