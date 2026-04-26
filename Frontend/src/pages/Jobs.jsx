@@ -6,7 +6,7 @@ import "../styles/forms.css";
 
 const MOCK_JOBS = [
   { id: 1, title: "Senior React Developer", department: "Engineering", skills: ["React", "TypeScript", "Node.js"], budget: "₹18-22L", deadline: "2026-05-15", vendors: 3, candidates: 18, status: "Open", priority: "High" },
-  { id: 2, title: "DevOps Engineer", department: "Engineering", skills: ["AWS", "Docker", "Kubernetes"], budget: "₹16-20L", deadline: "2026-05-20", vendors: 2, candidates: 12, status: "Open", priority: "High" },
+  { id: 2, title: "DevOps Engineer", department: "Engineering", skills: ["AWS", "Docker", "Kubernetes"], budget: "₹16-20L", deadline: "2026-05-20", vendors: 2, candidates: 12, status: "Pending Approval", priority: "High" },
   { id: 3, title: "Data Analyst", department: "Analytics", skills: ["Python", "SQL", "Power BI"], budget: "₹10-14L", deadline: "2026-06-01", vendors: 4, candidates: 24, status: "Open", priority: "Medium" },
   { id: 4, title: "UI/UX Designer", department: "Design", skills: ["Figma", "Sketch", "Adobe XD"], budget: "₹12-16L", deadline: "2026-05-25", vendors: 2, candidates: 9, status: "Open", priority: "Medium" },
   { id: 5, title: "Backend Engineer (Java)", department: "Engineering", skills: ["Java", "Spring Boot", "Microservices"], budget: "₹20-25L", deadline: "2026-05-10", vendors: 3, candidates: 15, status: "Closed", priority: "Low" },
@@ -31,7 +31,7 @@ function Jobs() {
   });
 
   const getStatusBadge = (s) => {
-    const m = { Open: "badge-success", Closed: "badge-danger", "On Hold": "badge-warning" };
+    const m = { Open: "badge-success", Closed: "badge-danger", "On Hold": "badge-neutral", "Pending Approval": "badge-warning" };
     return <span className={`badge ${m[s] || "badge-neutral"}`}>{s}</span>;
   };
 
@@ -51,7 +51,18 @@ function Jobs() {
       <td><span style={{fontWeight:700, color:"var(--navy-500)"}}>{job.vendors}</span> / <span style={{fontWeight:700}}>{job.candidates}</span></td>
       <td>{getPriorityBadge(job.priority)}</td>
       <td>{getStatusBadge(job.status)}</td>
-      <td><div className="table-actions"><button className="table-action-btn" title="View">👁</button><button className="table-action-btn" title="Edit">✏️</button></div></td>
+      <td>
+        <div className="table-actions">
+          {job.status === "Pending Approval" && (
+            <>
+              <button className="table-action-btn" title="Approve" style={{ color: "var(--success)" }}>✅</button>
+              <button className="table-action-btn" title="Reject" style={{ color: "var(--danger)" }}>❌</button>
+            </>
+          )}
+          <button className="table-action-btn" title="View">👁</button>
+          <button className="table-action-btn" title="Edit">✏️</button>
+        </div>
+      </td>
     </tr>
   );
 
@@ -70,7 +81,7 @@ function Jobs() {
             <input type="text" placeholder="Search jobs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} id="job-search" />
           </div>
           <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} id="job-status-filter">
-            <option value="All">All Status</option><option value="Open">Open</option><option value="Closed">Closed</option><option value="On Hold">On Hold</option>
+            <option value="All">All Status</option><option value="Open">Open</option><option value="Pending Approval">Pending Approval</option><option value="Closed">Closed</option><option value="On Hold">On Hold</option>
           </select>
           <select className="filter-select" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} id="job-priority-filter">
             <option value="All">All Priority</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
@@ -90,6 +101,16 @@ function Jobs() {
                 <div className="form-group"><label className="form-label">Budget Range</label><input className="form-input" type="text" placeholder="e.g. ₹18-22L" id="job-budget-input" /></div>
                 <div className="form-group"><label className="form-label">Deadline</label><input className="form-input" type="date" id="job-deadline-input" /></div>
                 <div className="form-group"><label className="form-label">Priority</label><select className="form-select" id="job-priority-select"><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select></div>
+                <div className="form-group">
+                  <label className="form-label">Assign Vendors (Multi-select)</label>
+                  <select className="form-select" multiple style={{ height: "80px", padding: "0.5rem" }}>
+                    <option value="v1">TechStaff Solutions</option>
+                    <option value="v2">InnoRecruit Pvt Ltd</option>
+                    <option value="v3">CloudHire Global</option>
+                    <option value="v4">SkillBridge HR</option>
+                  </select>
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>Hold Ctrl/Cmd to select multiple</p>
+                </div>
               </div>
               <div className="modal-footer"><button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-success" id="job-submit-btn">Create Job</button></div>
             </div>
