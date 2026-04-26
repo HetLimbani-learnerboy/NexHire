@@ -39,6 +39,17 @@ function Login() {
       const result = login(email, password);
 
       if (result.success) {
+        if(localStorage.getItem("demoRole") === "admin"){
+          navigate("/dashboard");
+        } else if(localStorage.getItem("demoRole") === "hr"){
+          navigate("/hr-dashboard");
+        } else if(localStorage.getItem("demoRole") === "vendor"){
+          navigate("/vendor-dashboard");
+        }
+        else if(localStorage.getItem("demoRole") === "manager"){
+          navigate("/manager-dashboard");
+        }
+         else
         navigate("/dashboard");
       } else {
         setError(result.message || "Invalid credentials.");
