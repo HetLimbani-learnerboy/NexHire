@@ -141,11 +141,6 @@ NAVBAR
   animation: logoSpin 10s linear infinite;
 }
 
-@keyframes logoSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .brand-box h2 {
   margin: 0;
   font-size: 28px;
