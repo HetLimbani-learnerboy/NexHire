@@ -1,14 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { useAuth } from "@/context/AuthContext";
 import "@/styles/login.css";
 import logo from "@/assets/logo.png";
-=======
-import { useAuth } from "../../context/AuthContext";
-import "@/styles/login.css";
-import logo from "../../assets/logo.png";
->>>>>>> 76b5bf94d9a85b484b21deacfff4837dccec984b
 
 /*
 =================================================
