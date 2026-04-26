@@ -1,0 +1,122 @@
+/* ============================================
+   NexHire ATS – Pipeline Kanban Styles
+   ============================================ */
+
+.pipeline-board {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  min-height: 0;
+  flex: 1;
+}
+
+.pipeline-column {
+  min-width: 280px;
+  max-width: 280px;
+  background: var(--gray-50);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 180px);
+}
+
+.pipeline-column-header {
+  padding: 16px 18px;
+  border-bottom: 2px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pipeline-column-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.pipeline-column-body {
+  padding: 14px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pipeline-card {
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  border: 1px solid var(--card-border);
+  transition: var(--transition-fast);
+}
+
+.pipeline-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.pipeline-card.dragging {
+  opacity: 0.4;
+}
+
+.pipeline-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.pipeline-card-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pipeline-card-header span {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pipeline-card p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.pipeline-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 10px;
+  background: var(--emerald-100);
+  color: var(--emerald-600);
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.pipeline-drop-zone {
+  text-align: center;
+  padding: 28px 0;
+  color: var(--gray-400);
+  font-size: 13px;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .pipeline-column {
+    min-width: 260px;
+    max-width: 260px;
+  }
+}

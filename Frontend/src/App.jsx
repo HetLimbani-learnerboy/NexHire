@@ -12,6 +12,9 @@ import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import Users from "./pages/Users";
+import HRDashboard from "./pages/HRDashboard";
+import Pipeline from "./pages/Pipeline";
+import Interviews from "./pages/Interviews";
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/hr-dashboard" element={<HRDashboard />} />
+            <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/interviews" element={<Interviews />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
