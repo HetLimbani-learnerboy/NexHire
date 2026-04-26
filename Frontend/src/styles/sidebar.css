@@ -100,7 +100,6 @@
   object-fit:contain;
   border-radius:14px;
   flex-shrink:0;
-  animation:logoSpin 12s linear infinite;
 }
 
 @keyframes logoSpin{
