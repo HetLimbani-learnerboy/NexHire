@@ -48,9 +48,10 @@ function Sidebar({
   /* ---------------------------------------
      Common Pages
   --------------------------------------- */
+  const dashboardRoute = role === "hr" ? "/hr-dashboard" : "/dashboard";
   const commonMain = [
     {
-      to: "/dashboard",
+      to: dashboardRoute,
       label: "Dashboard",
       icon: "▣"
     }

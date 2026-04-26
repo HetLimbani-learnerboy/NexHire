@@ -1,15 +1,21 @@
 import React, { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 const initialNotifications = [
-  { id: 1, type: "info", title: "New Job Requisition", message: "A new job 'Frontend Developer' has been created.", time: "2 mins ago", isRead: false },
+  { id: 1, type: "info", title: "New Job Requisition", message: "A new job 'Frontend Developer' has been created and is pending approval.", time: "2 mins ago", isRead: false },
   { id: 2, type: "success", title: "Candidate Shortlisted", message: "John Doe has been shortlisted for the Backend Role.", time: "1 hour ago", isRead: false },
-  { id: 3, type: "warning", title: "Interview Reminder", message: "Upcoming interview with Jane Smith in 30 minutes.", time: "30 mins ago", isRead: true },
-  { id: 4, type: "info", title: "System Update", message: "NexHire ATS will be undergoing maintenance at 12:00 AM.", time: "1 day ago", isRead: true }
+  { id: 3, type: "warning", title: "Interview Reminder", message: "Upcoming interview with Jane Smith in 30 minutes.", time: "30 mins ago", isRead: false },
+  { id: 4, type: "info", title: "Vendor Registered", message: "TechStaff Solutions has completed registration and is pending review.", time: "3 hours ago", isRead: true },
+  { id: 5, type: "success", title: "Candidate Hired", message: "Arjun Mehta has been successfully hired for Backend Engineer (Java).", time: "1 day ago", isRead: true },
+  { id: 6, type: "info", title: "System Update", message: "NexHire ATS will be undergoing maintenance at 12:00 AM.", time: "1 day ago", isRead: true },
 ];
 
 function Notifications() {
+  const { setMobileOpen } = useOutletContext();
   const [notifications, setNotifications] = useState(initialNotifications);
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const markAsRead = (id) => {
     setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
@@ -19,66 +25,48 @@ function Notifications() {
     setNotifications(notifications.map(n => ({ ...n, isRead: true })));
   };
 
-  return (
-    <div className="page-container fade-in">
-      <Navbar title="Notifications" subtitle="Stay updated with your latest alerts" />
-      
-      <div className="page-content slide-up">
-        <div className="card" style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-            <h3 style={{ margin: 0, color: "var(--navy-900)" }}>All Notifications</h3>
-            <button 
-              onClick={markAllAsRead}
-              style={{ background: "transparent", color: "var(--emerald-500)", fontWeight: "600" }}
-            >
-              Mark all as read
-            </button>
-          </div>
+  const getTypeColor = (type) => {
+    const m = { info: "blue", success: "green", warning: "orange" };
+    return m[type] || "blue";
+  };
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {notifications.length === 0 ? (
-              <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "2rem" }}>No notifications right now.</p>
-            ) : (
-              notifications.map((notif) => (
-                <div key={notif.id} style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: `1px solid ${notif.isRead ? "var(--gray-200)" : "var(--emerald-200)"}`,
-                  backgroundColor: notif.isRead ? "var(--white)" : "var(--emerald-50)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  transition: "var(--transition-base)"
-                }}>
-                  <div style={{ display: "flex", gap: "1rem" }}>
-                    <div style={{
-                      width: "10px", 
-                      height: "10px", 
-                      borderRadius: "50%", 
-                      backgroundColor: notif.isRead ? "transparent" : "var(--emerald-500)",
-                      marginTop: "0.5rem"
-                    }} />
-                    <div>
-                      <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--navy-900)", fontSize: "1rem" }}>{notif.title}</h4>
-                      <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem" }}>{notif.message}</p>
-                      <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "block", marginTop: "0.5rem" }}>{notif.time}</span>
-                    </div>
+  return (
+    <>
+      <Navbar title="Notifications" subtitle="Stay updated with your latest alerts" onHamburgerClick={() => setMobileOpen(true)} />
+      <div className="dashboard-page">
+        <div className="page-header">
+          <div className="page-header-left">
+            <h2>Notifications {unreadCount > 0 && <span className="badge badge-danger" style={{ verticalAlign: "middle" }}>{unreadCount} new</span>}</h2>
+            <p>View job updates, interview reminders, and stage change alerts</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline btn-sm" onClick={markAllAsRead}>Mark all as read</button>
+          </div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-card-body">
+            <div className="activity-list">
+              {notifications.map((notif) => (
+                <div className="activity-item" key={notif.id} style={{ opacity: notif.isRead ? 0.6 : 1, cursor: "pointer" }} onClick={() => markAsRead(notif.id)}>
+                  <div className={`activity-dot ${getTypeColor(notif.type)}`} />
+                  <div className="activity-text" style={{ flex: 1 }}>
+                    <p style={{ fontWeight: notif.isRead ? 400 : 600 }}>{notif.title}</p>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "13px", margin: "4px 0 0" }}>{notif.message}</p>
+                    <span>{notif.time}</span>
                   </div>
                   {!notif.isRead && (
-                    <button 
-                      onClick={() => markAsRead(notif.id)}
-                      style={{ fontSize: "0.85rem", padding: "0.25rem 0.5rem", borderRadius: "var(--radius-sm)", background: "var(--white)", border: "1px solid var(--gray-200)" }}
-                    >
+                    <button className="btn btn-sm btn-outline" onClick={(e) => { e.stopPropagation(); markAsRead(notif.id); }}>
                       Mark read
                     </button>
                   )}
                 </div>
-              ))
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
