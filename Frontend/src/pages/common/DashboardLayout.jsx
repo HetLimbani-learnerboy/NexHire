@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import "@/styles/dashboard.css";
 
 function DashboardLayout() {

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "@/styles/navbar.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 function Navbar({ title, subtitle, onHamburgerClick }) {
   const { user } = useAuth();

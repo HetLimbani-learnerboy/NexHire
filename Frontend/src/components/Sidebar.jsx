@@ -1,7 +1,7 @@
 import React from "react";
 import "@/styles/sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "@/assets/logo.png";
 
 /*
 ====================================================
