@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import "../styles/pipeline.css";
+import Navbar from "@/components/Navbar";
+import "@/styles/pipeline.css";
 
 const initialCandidates = [
   { id: 1, name: "Aditya Patel", role: "Senior React Developer", stage: "Submitted", date: "2026-04-20" },

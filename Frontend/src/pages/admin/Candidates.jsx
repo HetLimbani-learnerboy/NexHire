@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const initialCandidates = [
   { id: 1, name: "Aditya Patel", email: "aditya@gmail.com", job: "Senior React Developer", vendor: "TechStaff Solutions", status: "Interview", resume: true, date: "2026-04-20", duplicate: false },

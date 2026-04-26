@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const initialDecisions = [
   { id: "D001", candidate: "Sneha Sharma", role: "Full Stack Developer", avgScore: 4.3, recommendation: "Strong Hire", status: "Pending Decision" },

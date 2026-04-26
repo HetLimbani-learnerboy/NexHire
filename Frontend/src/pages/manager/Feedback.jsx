@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const initialInterviews = [
   { id: "I001", candidate: "Neha Gupta", role: "Data Analyst", date: "2026-04-25", mode: "Video Call", status: "Completed", feedbackStatus: "Pending" },

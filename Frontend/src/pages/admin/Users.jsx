@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const initialUsers = [
   { id: "U001", name: "Admin User", email: "admin@nexhire.com", role: "admin", status: "Active" },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import "@/styles/forms.css";
 
 function SubmitCandidate() {
   const { setMobileOpen } = useOutletContext();

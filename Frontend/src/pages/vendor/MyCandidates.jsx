@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const mockCandidates = [
   { id: "C001", name: "Aditya Patel", role: "Senior React Developer", date: "2026-04-20", stage: "Interview", status: "Active" },

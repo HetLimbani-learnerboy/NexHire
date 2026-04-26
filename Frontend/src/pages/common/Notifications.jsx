@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "@/components/Navbar";
 
 const initialNotifications = [
   { id: 1, type: "info", title: "New Job Requisition", message: "A new job 'Frontend Developer' has been created and is pending approval.", time: "2 mins ago", isRead: false },

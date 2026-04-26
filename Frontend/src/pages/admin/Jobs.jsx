@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const MOCK_JOBS = [
   { id: 1, title: "Senior React Developer", department: "Engineering", skills: ["React", "TypeScript", "Node.js"], budget: "₹18-22L", deadline: "2026-05-15", vendors: 3, candidates: 18, status: "Open", priority: "High" },

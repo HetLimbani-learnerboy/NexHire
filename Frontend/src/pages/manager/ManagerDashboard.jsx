@@ -1,8 +1,8 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import "../styles/dashboard.css";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import "@/styles/dashboard.css";
+import "@/styles/forms.css";
 
 function ManagerDashboard() {
   const { setMobileOpen } = useOutletContext();
