@@ -53,16 +53,32 @@ function Login() {
     if (type === "admin") {
       setEmail("admin@nexhire.com");
       setPassword("nexhire123");
+      localStorage.setItem("demoUser", "Sahil Dobaria");
+      localStorage.setItem("demoRole", "admin");
+      localStorage.setItem("email", "admin@nexhire.com");
     }
 
     if (type === "hr") {
       setEmail("hr@nexhire.com");
       setPassword("nexhire123");
+      localStorage.setItem("demoUser", "Het Limbani");
+      localStorage.setItem("demoRole", "hr");
+      localStorage.setItem("email", "hr@nexhire.com");
     }
 
     if (type === "vendor") {
       setEmail("vendor@nexhire.com");
       setPassword("nexhire123");
+      localStorage.setItem("demoUser", "Rohan Upadhyay");
+      localStorage.setItem("demoRole", "vendor");
+      localStorage.setItem("email", "vendor@nexhire.com");
+    }
+    if (type === "manager") {
+      setEmail("manager@nexhire.com");
+      setPassword("nexhire123");
+      localStorage.setItem("demoUser", "Priya Sharma");
+      localStorage.setItem("demoRole", "manager");
+      localStorage.setItem("email", "manager@nexhire.com");
     }
   };
 
@@ -314,6 +330,9 @@ function Login() {
               >
                 Vendor Login
               </button>
+              <button type="button"
+                onClick={() => fillDemo("manager")}
+              >Manager Login</button>
 
               <code>
                 Password :

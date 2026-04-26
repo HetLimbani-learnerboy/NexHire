@@ -1,76 +1,317 @@
 import React from "react";
 import "../styles/sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 
-function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-  const { user, logout } = useAuth();
+/*
+====================================================
+NexHire ATS Sidebar
+Role Based Access using localStorage demoRole
+admin / hr / vendor / manager
+====================================================
+*/
+
+function Sidebar({
+  collapsed,
+  setCollapsed,
+  mobileOpen,
+  setMobileOpen
+}) {
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate("/login"); };
-  const closeMobile = () => { if (mobileOpen) setMobileOpen(false); };
+  /* ---------------------------------------
+     Get Role From LocalStorage
+  --------------------------------------- */
+  const role =
+    localStorage.getItem("demoRole") ||
+    "guest";
 
-  const navItems = [
+  const userName =
+    localStorage.getItem("demoUser") ||
+    "User";
+
+  /* ---------------------------------------
+     Logout
+  --------------------------------------- */
+  const handleLogout = () => {
+    localStorage.removeItem("demoRole");
+    localStorage.removeItem("demoName");
+    navigate("/login");
+  };
+
+  const closeMobile = () => {
+    if (mobileOpen) {
+      setMobileOpen(false);
+    }
+  };
+
+  /* ---------------------------------------
+     Common Pages
+  --------------------------------------- */
+  const commonMain = [
     {
-      section: "Main",
-      links: [
-        { to: "/dashboard", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, label: "Dashboard" },
-      ],
-    },
-    {
-      section: "Management",
-      links: [
-        { to: "/vendors", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>, label: "Vendors" },
-        { to: "/jobs", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>, label: "Jobs" },
-        { to: "/candidates", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>, label: "Candidates" },
-      ],
-    },
-    {
-      section: "Analytics",
-      links: [
-        { to: "/reports", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: "Reports" },
-      ],
-    },
+      to: "/dashboard",
+      label: "Dashboard",
+      icon: "▣"
+    }
   ];
+
+  /* ---------------------------------------
+     Admin Pages
+  --------------------------------------- */
+  const adminPages = [
+    {
+      to: "/vendors",
+      label: "Vendors",
+      icon: "◉"
+    },
+    {
+      to: "/jobs",
+      label: "Jobs",
+      icon: "▤"
+    },
+    {
+      to: "/candidates",
+      label: "Candidates",
+      icon: "◈"
+    },
+    {
+      to: "/reports",
+      label: "Reports",
+      icon: "⬡"
+    },
+    {
+      to: "/users",
+      label: "Users",
+      icon: "✦"
+    }
+  ];
+
+  /* ---------------------------------------
+     HR Pages
+  --------------------------------------- */
+  const hrPages = [
+    {
+      to: "/jobs",
+      label: "Jobs",
+      icon: "▤"
+    },
+    {
+      to: "/pipeline",
+      label: "Pipeline",
+      icon: "◈"
+    },
+    {
+      to: "/interviews",
+      label: "Interviews",
+      icon: "⬡"
+    },
+    {
+      to: "/reports",
+      label: "Reports",
+      icon: "✦"
+    }
+  ];
+
+  /* ---------------------------------------
+     Vendor Pages
+  --------------------------------------- */
+  const vendorPages = [
+    {
+      to: "/submit-candidate",
+      label: "Submit Candidate",
+      icon: "➤"
+    },
+    {
+      to: "/my-candidates",
+      label: "My Candidates",
+      icon: "◈"
+    },
+    {
+      to: "/vendor-profile",
+      label: "Profile",
+      icon: "◎"
+    }
+  ];
+
+  /* ---------------------------------------
+     Manager Pages
+  --------------------------------------- */
+  const managerPages = [
+    {
+      to: "/review-candidates",
+      label: "Review",
+      icon: "◉"
+    },
+    {
+      to: "/feedback",
+      label: "Feedback",
+      icon: "✎"
+    },
+    {
+      to: "/final-selection",
+      label: "Selections",
+      icon: "★"
+    }
+  ];
+
+  /* ---------------------------------------
+     Role Based Links
+  --------------------------------------- */
+  let roleLinks = [];
+
+  if (role === "admin") {
+    roleLinks = adminPages;
+  }
+
+  if (role === "hr") {
+    roleLinks = hrPages;
+  }
+
+  if (role === "vendor") {
+    roleLinks = vendorPages;
+  }
+
+  if (role === "manager") {
+    roleLinks = managerPages;
+  }
 
   return (
     <>
-      {mobileOpen && <div className="sidebar-overlay" onClick={closeMobile} />}
-      <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+      {mobileOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={closeMobile}
+        ></div>
+      )}
+
+      <aside
+        className={`sidebar ${
+          collapsed ? "collapsed" : ""
+        } ${
+          mobileOpen ? "mobile-open" : ""
+        }`}
+      >
+
+        {/* Brand */}
         <div className="sidebar-brand">
-          <img src={logo} alt="NexHire" className="sidebar-brand-logo" />
-          <div className="sidebar-brand-text"><h2>NexHire</h2><span>ATS Platform</span></div>
+
+          <img
+            src={logo}
+            alt="NexHire"
+            className="sidebar-brand-logo"
+          />
+
+          {!collapsed && (
+            <div className="sidebar-brand-text">
+              <h2>NexHire</h2>
+              <span>ATS Platform</span>
+            </div>
+          )}
+
         </div>
 
+        {/* Navigation */}
         <nav className="sidebar-nav">
-          {navItems.map((section) => (
-            <React.Fragment key={section.section}>
-              <div className="sidebar-section-label">{section.section}</div>
-              {section.links.map((link) => (
-                <NavLink key={link.to} to={link.to} className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`} onClick={closeMobile}>
-                  <span className="sidebar-link-icon">{link.icon}</span>
-                  <span className="sidebar-link-text">{link.label}</span>
-                </NavLink>
-              ))}
-            </React.Fragment>
+
+          <div className="sidebar-section-label">
+            Main
+          </div>
+
+          {commonMain.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={closeMobile}
+              className={({ isActive }) =>
+                `sidebar-link ${
+                  isActive ? "active" : ""
+                }`
+              }
+            >
+              <span className="sidebar-link-icon">
+                {item.icon}
+              </span>
+
+              {!collapsed && (
+                <span className="sidebar-link-text">
+                  {item.label}
+                </span>
+              )}
+            </NavLink>
           ))}
+
+          <div className="sidebar-section-label">
+            {role.toUpperCase()}
+          </div>
+
+          {roleLinks.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={closeMobile}
+              className={({ isActive }) =>
+                `sidebar-link ${
+                  isActive ? "active" : ""
+                }`
+              }
+            >
+              <span className="sidebar-link-icon">
+                {item.icon}
+              </span>
+
+              {!collapsed && (
+                <span className="sidebar-link-text">
+                  {item.label}
+                </span>
+              )}
+            </NavLink>
+          ))}
+
         </nav>
 
+        {/* User Box */}
         <div className="sidebar-user">
-          <div className="sidebar-user-avatar">{user?.avatar || "U"}</div>
-          <div className="sidebar-user-info"><h4>{user?.name || "User"}</h4><p>{user?.role || "Guest"}</p></div>
-          <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)} title={collapsed ? "Expand" : "Collapse"}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform 0.3s" }}><polyline points="15 18 9 12 15 6"/></svg>
+
+          <div className="sidebar-user-avatar">
+            {userName.charAt(0)}
+          </div>
+
+          {!collapsed && (
+            <div className="sidebar-user-info">
+              <h4>{userName}</h4>
+              <p>{role}</p>
+            </div>
+          )}
+
+          <button
+            className="sidebar-toggle"
+            onClick={() =>
+              setCollapsed(!collapsed)
+            }
+          >
+            {collapsed ? "➜" : "◀"}
           </button>
+
         </div>
 
+        {/* Logout */}
         <div className="sidebar-logout">
-          <button className="sidebar-logout-btn" onClick={handleLogout}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign Out</span>
+
+          <button
+            className="sidebar-logout-btn"
+            onClick={handleLogout}
+          >
+            <span>⇥</span>
+
+            {!collapsed && (
+              <span>Sign Out</span>
+            )}
+
           </button>
+
         </div>
+
       </aside>
     </>
   );

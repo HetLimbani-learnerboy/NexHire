@@ -111,12 +111,6 @@
   width:58px;
   height:58px;
   object-fit:contain;
-  animation:rotateLogo 12s linear infinite;
-}
-
-@keyframes rotateLogo{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
 }
 
 .login-branding-logo h2{
