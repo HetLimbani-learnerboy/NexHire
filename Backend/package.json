@@ -1,4 +1,12 @@
 {
+  "name": "nexhire-backend",
+  "version": "1.0.0",
+  "description": "NexHire ATS Backend",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -8,5 +16,8 @@
     "mongoose": "^9.5.0",
     "multer": "^2.1.1",
     "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
