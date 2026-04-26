@@ -48,7 +48,7 @@ function Sidebar({
   /* ---------------------------------------
      Common Pages
   --------------------------------------- */
-  const dashboardRoute = role === "hr" ? "/hr-dashboard" : "/dashboard";
+  const dashboardRoute = role === "hr" ? "/hr-dashboard" : role === "vendor" ? "/vendor-dashboard" : "/dashboard";
   const commonMain = [
     {
       to: dashboardRoute,

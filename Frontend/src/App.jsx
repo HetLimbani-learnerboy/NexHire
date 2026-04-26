@@ -15,6 +15,10 @@ import Users from "./pages/Users";
 import HRDashboard from "./pages/HRDashboard";
 import Pipeline from "./pages/Pipeline";
 import Interviews from "./pages/Interviews";
+import VendorDashboard from "./pages/VendorDashboard";
+import SubmitCandidate from "./pages/SubmitCandidate";
+import MyCandidates from "./pages/MyCandidates";
+import VendorProfile from "./pages/VendorProfile";
 
 function App() {
   return (
@@ -35,6 +39,10 @@ function App() {
             <Route path="/hr-dashboard" element={<HRDashboard />} />
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/interviews" element={<Interviews />} />
+            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+            <Route path="/submit-candidate" element={<SubmitCandidate />} />
+            <Route path="/my-candidates" element={<MyCandidates />} />
+            <Route path="/vendor-profile" element={<VendorProfile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
