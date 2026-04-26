@@ -50,9 +50,7 @@
   }
 }
 
-body {
-  margin: 0;
-}
+
 
 #root {
   width: 1126px;
@@ -109,3 +107,7 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 } */
+
+body {
+  margin: 0;
+}
