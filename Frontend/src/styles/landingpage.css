@@ -437,6 +437,9 @@ BOTTOM STRIP
 
 .book-now {
   background: #2A4B7C;
+  padding: 34px;
+  min-height: 180px;
+  transition: var(--transition);
 }
 
 .book-now h3,
