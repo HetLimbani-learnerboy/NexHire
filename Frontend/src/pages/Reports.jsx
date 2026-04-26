@@ -6,6 +6,19 @@ import "../styles/forms.css";
 
 function Reports() {
   const { setMobileOpen } = useOutletContext();
+  const [dateRange, setDateRange] = React.useState({ from: "2026-01-01", to: "2026-04-30" });
+
+  const handleExportCSV = () => {
+    const csvContent = "data:text/csv;charset=utf-8,Vendor,Submitted,Hired,Ratio,AvgDays,Rating\n" + 
+      vendorMetrics.map(v => `${v.name},${v.submitted},${v.hired},${v.ratio},${v.avgDays},${v.rating}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "vendor_performance_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const monthlyHires = [
     { month: "Jan", value: 12 }, { month: "Feb", value: 18 }, { month: "Mar", value: 15 },
@@ -85,10 +98,18 @@ function Reports() {
         </div>
 
         <div className="dashboard-card">
-          <div className="dashboard-card-header"><h3>Vendor Performance Breakdown</h3><button className="btn btn-sm btn-outline">Export CSV</button></div>
+          <div className="dashboard-card-header" style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
+            <h3>Vendor Performance Breakdown</h3>
+            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginLeft: "auto" }}>
+              <input type="date" value={dateRange.from} onChange={(e) => setDateRange({...dateRange, from: e.target.value})} style={{ padding: "0.4rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--gray-300)" }} />
+              <span>to</span>
+              <input type="date" value={dateRange.to} onChange={(e) => setDateRange({...dateRange, to: e.target.value})} style={{ padding: "0.4rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--gray-300)" }} />
+              <button className="btn btn-sm btn-outline" onClick={handleExportCSV}>Export CSV</button>
+            </div>
+          </div>
           <div className="data-table-container" style={{ border: "none" }}>
             <table className="data-table">
-              <thead><tr><th>Vendor</th><th>Submitted</th><th>Hired</th><th>Conversion</th><th>Avg. Days to Fill</th><th>Rating</th></tr></thead>
+              <thead><tr><th>Vendor</th><th>Submitted</th><th>Hired</th><th>Sub-to-Hire Ratio</th><th>Avg. Days to Fill</th><th>Rating</th></tr></thead>
               <tbody>
                 {vendorMetrics.map((v, idx) => (
                   <tr key={idx}>

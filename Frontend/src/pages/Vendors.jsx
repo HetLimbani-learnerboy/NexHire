@@ -5,14 +5,14 @@ import Table from "../components/Table";
 import "../styles/forms.css";
 
 const MOCK_VENDORS = [
-  { id: 1, company: "TechStaff Solutions", contact: "Rajesh Kumar", email: "rajesh@techstaff.in", rating: 5, candidates: 48, status: "Active" },
-  { id: 2, company: "InnoRecruit Pvt Ltd", contact: "Priya Nair", email: "priya@innorecruit.com", rating: 4, candidates: 35, status: "Active" },
-  { id: 3, company: "CloudHire Global", contact: "Amit Shah", email: "amit@cloudhire.io", rating: 4, candidates: 29, status: "Active" },
-  { id: 4, company: "SkillBridge HR", contact: "Neha Gupta", email: "neha@skillbridge.co", rating: 3, candidates: 18, status: "Pending" },
-  { id: 5, company: "HireWave Tech", contact: "Suresh Mehta", email: "suresh@hirewave.in", rating: 4, candidates: 22, status: "Active" },
-  { id: 6, company: "RecruitEdge", contact: "Kavita Patel", email: "kavita@recruitedge.com", rating: 3, candidates: 15, status: "Inactive" },
-  { id: 7, company: "TalentForce India", contact: "Vikram Singh", email: "vikram@talentforce.in", rating: 5, candidates: 41, status: "Active" },
-  { id: 8, company: "ProHire Solutions", contact: "Deepa Joshi", email: "deepa@prohire.com", rating: 4, candidates: 26, status: "Active" },
+  { id: 1, company: "TechStaff Solutions", contact: "Rajesh Kumar", email: "rajesh@techstaff.in", rating: 5, candidates: 48, status: "Active", turnaroundTime: "2 days", closureScore: "95%", qualityScore: "90%" },
+  { id: 2, company: "InnoRecruit Pvt Ltd", contact: "Priya Nair", email: "priya@innorecruit.com", rating: 4, candidates: 35, status: "Active", turnaroundTime: "4 days", closureScore: "80%", qualityScore: "85%" },
+  { id: 3, company: "CloudHire Global", contact: "Amit Shah", email: "amit@cloudhire.io", rating: 4, candidates: 29, status: "Active", turnaroundTime: "3 days", closureScore: "85%", qualityScore: "88%" },
+  { id: 4, company: "SkillBridge HR", contact: "Neha Gupta", email: "neha@skillbridge.co", rating: 3, candidates: 18, status: "Pending", turnaroundTime: "5 days", closureScore: "70%", qualityScore: "75%" },
+  { id: 5, company: "HireWave Tech", contact: "Suresh Mehta", email: "suresh@hirewave.in", rating: 4, candidates: 22, status: "Active", turnaroundTime: "3 days", closureScore: "88%", qualityScore: "82%" },
+  { id: 6, company: "RecruitEdge", contact: "Kavita Patel", email: "kavita@recruitedge.com", rating: 3, candidates: 15, status: "Inactive", turnaroundTime: "6 days", closureScore: "60%", qualityScore: "65%" },
+  { id: 7, company: "TalentForce India", contact: "Vikram Singh", email: "vikram@talentforce.in", rating: 5, candidates: 41, status: "Active", turnaroundTime: "2 days", closureScore: "92%", qualityScore: "95%" },
+  { id: 8, company: "ProHire Solutions", contact: "Deepa Joshi", email: "deepa@prohire.com", rating: 4, candidates: 26, status: "Active", turnaroundTime: "4 days", closureScore: "82%", qualityScore: "80%" },
 ];
 
 function Vendors() {
@@ -39,12 +39,18 @@ function Vendors() {
     return <span className={`badge ${cls[status]}`}>{status}</span>;
   };
 
-  const columns = ["Vendor", "Contact Person", "Rating", "Candidates", "Status", "Actions"];
+  const columns = ["Vendor", "Contact Person", "Performance (TAT / Close / Qual)", "Rating", "Candidates", "Status", "Actions"];
 
   const renderRow = (vendor) => (
     <tr key={vendor.id}>
       <td><div className="table-user"><div className="table-user-avatar">{vendor.company.split(" ").map(w=>w[0]).join("").slice(0,2)}</div><div className="table-user-info"><h4>{vendor.company}</h4><p>{vendor.email}</p></div></div></td>
       <td>{vendor.contact}</td>
+      <td>
+        <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+          TAT: <strong>{vendor.turnaroundTime}</strong> <br/>
+          Close: <strong>{vendor.closureScore}</strong> | Qual: <strong>{vendor.qualityScore}</strong>
+        </div>
+      </td>
       <td>{renderStars(vendor.rating)}</td>
       <td><span style={{fontWeight:700}}>{vendor.candidates}</span> submitted</td>
       <td>{getStatusBadge(vendor.status)}</td>
@@ -82,6 +88,11 @@ function Vendors() {
                 <div className="form-group"><label className="form-label">Contact Person</label><input className="form-input" type="text" placeholder="Enter contact name" id="vendor-contact-person" /></div>
                 <div className="form-group"><label className="form-label">Email Address</label><input className="form-input" type="email" placeholder="Enter email address" id="vendor-email" /></div>
                 <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" type="tel" placeholder="Enter phone number" id="vendor-phone" /></div>
+                <div className="form-group">
+                  <label className="form-label">Agreement File</label>
+                  <input className="form-input" type="file" accept=".pdf,.doc,.docx" style={{ padding: "0.5rem" }} />
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>Upload SLA or vendor agreement document.</p>
+                </div>
               </div>
               <div className="modal-footer"><button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-success" id="vendor-submit-btn">Register Vendor</button></div>
             </div>
