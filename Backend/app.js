@@ -1,10 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-<<<<<<< HEAD
-=======
 const { Pool } = require("pg");
 const adminRoutes = require("./routes/adminRoutes");
->>>>>>> 76b5bf94d9a85b484b21deacfff4837dccec984b
 require("dotenv").config();
 
 // ── Centralized pool (no circular dependency) ─────────────────────────────────
@@ -12,9 +9,14 @@ const pool = require("./config/db");
 
 // ── Import table-creation functions ───────────────────────────────────────────
 const { createJobsTable } = require("./models/Job");
+const { createCandidatesTable } = require("./models/Candidate");
+const { createInterviewsTable } = require("./models/Interview");
+const { createCandidateStatusTable } = require("./models/CandidateStatus");
 
 // ── Import route files ────────────────────────────────────────────────────────
 const jobRoutes = require("./routes/jobRoutes");
+const candidateRoutes = require("./routes/candidateRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
 
 const app = express();
 
@@ -31,9 +33,18 @@ const initDB = async () => {
         client = await pool.connect();
         console.log("✅ Connected to Neon database successfully");
 
-        // Auto-create tables on startup
+        // Auto-create tables on startup (order matters for FK deps)
         await createJobsTable();
         console.log("✅ Jobs table ready");
+
+        await createCandidatesTable();
+        console.log("✅ Candidates table ready");
+
+        await createCandidateStatusTable();
+        console.log("✅ CandidateStatus table ready");
+
+        await createInterviewsTable();
+        console.log("✅ Interviews table ready");
     } catch (err) {
         console.error("❌ Database initialisation error:", err);
     } finally {
@@ -53,6 +64,8 @@ app.get("/", (req, res) => {
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use("/api/jobs", jobRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/interviews", interviewRoutes);
 
 // ── Start server ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5001;
