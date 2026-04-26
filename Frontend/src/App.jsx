@@ -1,20 +1,32 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import DashboardLayout from "./pages/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
-import Vendors from "./pages/Vendors";
-import Jobs from "./pages/Jobs";
-import Candidates from "./pages/Candidates";
-import Reports from "./pages/Reports";
-import Profile from "./pages/Profile";
-import Notifications from "./pages/Notifications";
-import Users from "./pages/Users";
-import HRDashboard from "./pages/HRDashboard";
-import Pipeline from "./pages/Pipeline";
-import Interviews from "./pages/Interviews";
+import { AuthProvider } from "@/context/AuthContext";
+import LandingPage from "@/pages/common/LandingPage";
+import Login from "@/pages/common/Login";
+import DashboardLayout from "@/pages/common/DashboardLayout";
+import Profile from "@/pages/common/Profile";
+import Notifications from "@/pages/common/Notifications";
+
+import Dashboard from "@/pages/admin/Dashboard";
+import Vendors from "@/pages/admin/Vendors";
+import Jobs from "@/pages/admin/Jobs";
+import Candidates from "@/pages/admin/Candidates";
+import Reports from "@/pages/admin/Reports";
+import Users from "@/pages/admin/Users";
+
+import HRDashboard from "@/pages/hr/HRDashboard";
+import Pipeline from "@/pages/hr/Pipeline";
+import Interviews from "@/pages/hr/Interviews";
+
+import VendorDashboard from "@/pages/vendor/VendorDashboard";
+import SubmitCandidate from "@/pages/vendor/SubmitCandidate";
+import MyCandidates from "@/pages/vendor/MyCandidates";
+import VendorProfile from "@/pages/vendor/VendorProfile";
+
+import ManagerDashboard from "@/pages/manager/ManagerDashboard";
+import ReviewCandidates from "@/pages/manager/ReviewCandidates";
+import Feedback from "@/pages/manager/Feedback";
+import FinalSelection from "@/pages/manager/FinalSelection";
 
 function App() {
   return (
@@ -35,6 +47,14 @@ function App() {
             <Route path="/hr-dashboard" element={<HRDashboard />} />
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/interviews" element={<Interviews />} />
+            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
+            <Route path="/submit-candidate" element={<SubmitCandidate />} />
+            <Route path="/my-candidates" element={<MyCandidates />} />
+            <Route path="/vendor-profile" element={<VendorProfile />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="/review-candidates" element={<ReviewCandidates />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/final-selection" element={<FinalSelection />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

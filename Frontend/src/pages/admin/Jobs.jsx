@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+<<<<<<< HEAD:Frontend/src/pages/Jobs.jsx
 import Navbar from "../components/Navbar";
 import Table from "../components/Table";
 import Loader from "../components/Loader";
 import "../styles/forms.css";
+=======
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
+>>>>>>> 76b5bf94d9a85b484b21deacfff4837dccec984b:Frontend/src/pages/admin/Jobs.jsx
 
 const API_BASE = "http://localhost:5001/api/jobs";
 

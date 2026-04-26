@@ -1,5 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+<<<<<<< HEAD
+=======
+const { Pool } = require("pg");
+const adminRoutes = require("./routes/adminRoutes");
+>>>>>>> 76b5bf94d9a85b484b21deacfff4837dccec984b
 require("dotenv").config();
 
 // ── Centralized pool (no circular dependency) ─────────────────────────────────
@@ -17,6 +22,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/admin", adminRoutes);
 
 // ── Database Initialisation ───────────────────────────────────────────────────
 const initDB = async () => {

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import "../styles/login.css";
-import logo from "../assets/logo.png";
+import { useAuth } from "../../context/AuthContext";
+import "@/styles/login.css";
+import logo from "../../assets/logo.png";
 
 /*
 =================================================
