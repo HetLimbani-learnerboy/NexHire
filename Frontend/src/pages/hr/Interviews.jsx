@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import "@/styles/forms.css";
 
 const initialInterviews = [
   { id: 1, candidate: "Aditya Patel", role: "Senior React Developer", date: "2026-04-28", time: "10:00", mode: "Video", link: "https://meet.google.com/abc-def-ghi", status: "Scheduled", feedback: null },

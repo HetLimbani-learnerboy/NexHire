@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Table from "../components/Table";
-import "../styles/forms.css";
+import Navbar from "@/components/Navbar";
+import Table from "@/components/Table";
+import "@/styles/forms.css";
 
 const MOCK_VENDORS = [
   { id: 1, company: "TechStaff Solutions", contact: "Rajesh Kumar", email: "rajesh@techstaff.in", rating: 5, candidates: 48, status: "Active", turnaroundTime: "2 days", closureScore: "95%", qualityScore: "90%" },

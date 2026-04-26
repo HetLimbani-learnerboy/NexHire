@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/sidebar.css";
+import "@/styles/sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
@@ -48,7 +48,7 @@ function Sidebar({
   /* ---------------------------------------
      Common Pages
   --------------------------------------- */
-  const dashboardRoute = role === "hr" ? "/hr-dashboard" : "/dashboard";
+  const dashboardRoute = role === "hr" ? "/hr-dashboard" : role === "vendor" ? "/vendor-dashboard" : role === "manager" ? "/manager-dashboard" : "/dashboard";
   const commonMain = [
     {
       to: dashboardRoute,
