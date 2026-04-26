@@ -19,6 +19,10 @@ import VendorDashboard from "./pages/VendorDashboard";
 import SubmitCandidate from "./pages/SubmitCandidate";
 import MyCandidates from "./pages/MyCandidates";
 import VendorProfile from "./pages/VendorProfile";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import ReviewCandidates from "./pages/ReviewCandidates";
+import Feedback from "./pages/Feedback";
+import FinalSelection from "./pages/FinalSelection";
 
 function App() {
   return (
@@ -43,6 +47,10 @@ function App() {
             <Route path="/submit-candidate" element={<SubmitCandidate />} />
             <Route path="/my-candidates" element={<MyCandidates />} />
             <Route path="/vendor-profile" element={<VendorProfile />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="/review-candidates" element={<ReviewCandidates />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/final-selection" element={<FinalSelection />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
