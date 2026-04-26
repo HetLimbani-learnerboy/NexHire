@@ -48,7 +48,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Pending Reviews</h3>
-              <p className="stat-number">4</p>
+              <p className="stat-number">{stats.pendingReviews}</p>
               <span className="stat-change negative">Action Required</span>
             </div>
             <div className="stat-icon purple">👁</div>
@@ -56,7 +56,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Upcoming Interviews</h3>
-              <p className="stat-number">2</p>
+              <p className="stat-number">{stats.upcomingInterviews}</p>
               <span className="stat-change positive">Next: 11:00 AM</span>
             </div>
             <div className="stat-icon orange">📅</div>
@@ -64,7 +64,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Offers Extended</h3>
-              <p className="stat-number">1</p>
+              <p className="stat-number">{stats.offersExtended}</p>
               <span className="stat-change positive">This week</span>
             </div>
             <div className="stat-icon green">🎉</div>

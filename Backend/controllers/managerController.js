@@ -65,9 +65,52 @@ const submitFeedback = async (req, res) => {
     }
 };
 
+const getInterviews = async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true,
+            interviews: [
+                { id: "I001", candidate: "Neha Gupta", role: "Data Analyst", date: "2026-04-25", mode: "Video Call", status: "Completed", feedbackStatus: "Pending" },
+                { id: "I002", candidate: "Sneha Sharma", role: "Full Stack Developer", date: "2026-04-24", mode: "In-Person", status: "Completed", feedbackStatus: "Submitted" },
+            ]
+        });
+    } catch (error) {
+        console.error('Error fetching interviews:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+const getDecisions = async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true,
+            decisions: [
+                { id: "D001", candidate: "Sneha Sharma", role: "Full Stack Developer", avgScore: 4.3, recommendation: "Strong Hire", status: "Pending Decision" },
+                { id: "D002", candidate: "Ravi Verma", role: "DevOps Engineer", avgScore: 2.8, recommendation: "Reject", status: "Rejected" },
+                { id: "D003", candidate: "Priyanka Das", role: "UI/UX Designer", avgScore: 4.5, recommendation: "Hire", status: "Offered" },
+            ]
+        });
+    } catch (error) {
+        console.error('Error fetching decisions:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+const submitDecision = async (req, res) => {
+    try {
+        res.status(200).json({ success: true, message: 'Decision submitted successfully' });
+    } catch (error) {
+        console.error('Error submitting decision:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 module.exports = {
     getDashboardData,
     getPendingCandidates,
     updateCandidateStatus,
-    submitFeedback
+    submitFeedback,
+    getInterviews,
+    getDecisions,
+    submitDecision
 };

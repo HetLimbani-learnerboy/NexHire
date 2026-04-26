@@ -1,32 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import api from "@/utils/api";
 import "@/styles/forms.css";
-
-const initialCandidates = [
-  { id: "C001", name: "Aditya Patel", role: "Senior React Developer", experience: "5 Years", source: "TechStaff Solutions", status: "Pending Review" },
-  { id: "C002", name: "Sneha Sharma", role: "Full Stack Developer", experience: "3 Years", source: "InnoRecruit", status: "Pending Review" },
-  { id: "C003", name: "Ravi Verma", role: "DevOps Engineer", experience: "6 Years", source: "CloudHire Global", status: "Reviewed" }
-];
 
 function ReviewCandidates() {
   const { setMobileOpen } = useOutletContext();
-  const [candidates, setCandidates] = useState(initialCandidates);
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  const filtered = candidates.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.role.toLowerCase().includes(searchQuery.toLowerCase()));
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await api.get('/manager/candidates/pending');
+        if (res.data.success) {
+          setCandidates(res.data.candidates || []);
+        }
+      } catch (error) {
+        console.error("Error fetching candidates:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCandidates();
+  }, []);
+
+  const filtered = candidates.filter(c => c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.role?.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const handleReview = (candidate) => {
     setSelectedCandidate(candidate);
     setShowProfileModal(true);
   };
 
-  const markAsReviewed = () => {
-    setCandidates(candidates.map(c => c.id === selectedCandidate.id ? { ...c, status: "Reviewed" } : c));
-    setShowProfileModal(false);
+  const markAsReviewed = async () => {
+    try {
+      const res = await api.put(`/manager/candidates/${selectedCandidate.id}/status`, { status: "Reviewed" });
+      if (res.data.success) {
+        setCandidates(candidates.map(c => c.id === selectedCandidate.id ? { ...c, status: "Reviewed" } : c));
+        setShowProfileModal(false);
+        alert("Candidate marked as reviewed!");
+      }
+    } catch (error) {
+      console.error("Error updating candidate status:", error);
+      alert("Failed to update status.");
+    }
   };
 
   const renderRow = (candidate) => (
