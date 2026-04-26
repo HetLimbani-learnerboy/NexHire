@@ -170,7 +170,6 @@ NAVBAR
     width: 48px;
     height: 48px;
     object-fit: contain;
-    animation: logoSpin 10s linear infinite;
 }
 
 .brand-box h2 {
