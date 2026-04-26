@@ -2,7 +2,7 @@ import React from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import DashboardCard from "@/components/DashboardCard";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function Dashboard() {
   const { user } = useAuth();
