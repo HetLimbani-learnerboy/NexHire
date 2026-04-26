@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/landingpage.css";
 import logo from "../assets/logo.png";
 
@@ -11,6 +12,7 @@ Responsive + Animated + FAQ Updated
 function LandingPage() {
     const [activeFAQ, setActiveFAQ] = useState(null);
     const [scrolled, setScrolled] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const scrollHandler = () => {
@@ -116,7 +118,7 @@ function LandingPage() {
                         <li><a href="#faq">FAQ</a></li>
                     </ul>
 
-                    <button className="nav-btn">Login</button>
+                    <button className="nav-btn" onClick={() => navigate("/login")}>Login</button>
 
                 </nav>
 
@@ -141,7 +143,7 @@ function LandingPage() {
                         </p>
 
                         <div className="hero-actions">
-                            <button className="primary-btn">
+                            <button className="primary-btn" onClick={() => navigate("/login")}>
                                 Get Started
                             </button>
                             <button
