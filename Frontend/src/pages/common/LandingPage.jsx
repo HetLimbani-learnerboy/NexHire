@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "@/styles/landingpage.css";
+<<<<<<< HEAD
 import logo from "@/assets/logo.png";
+=======
+import logo from "../../assets/logo.png";
+>>>>>>> 76b5bf94d9a85b484b21deacfff4837dccec984b
 
 /*
 NexHire ATS Landing Page

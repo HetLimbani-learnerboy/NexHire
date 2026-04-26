@@ -69,6 +69,7 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+const adminRoutes = require("./routes/adminRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -76,6 +77,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/admin", adminRoutes);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
