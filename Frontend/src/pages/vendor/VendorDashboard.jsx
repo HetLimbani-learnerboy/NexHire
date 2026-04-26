@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import api from "@/utils/api";
 import "@/styles/dashboard.css";
 import "@/styles/forms.css";
 
@@ -8,18 +9,34 @@ function VendorDashboard() {
   const { setMobileOpen } = useOutletContext();
   const vendorName = localStorage.getItem("demoUser") || "Vendor User";
 
-  const assignedJobs = [
-    { id: "J001", title: "Senior React Developer", department: "Engineering", location: "Bangalore", status: "Active" },
-    { id: "J002", title: "Full Stack Developer", department: "Engineering", location: "Remote", status: "Active" },
-    { id: "J003", title: "UI/UX Designer", department: "Product", location: "Mumbai", status: "Active" }
-  ];
+  const [stats, setStats] = useState({ totalSubmitted: 0, shortlisted: 0, interviews: 0, hired: 0 });
+  const [recentUpdates, setRecentUpdates] = useState([]);
+  const [assignedJobs, setAssignedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentUpdates = [
-    { text: "Your candidate Aditya Patel was moved to Interview stage.", time: "1 hour ago", color: "orange" },
-    { text: "Your candidate Neha Gupta was marked as Duplicate.", time: "3 hours ago", color: "red" },
-    { text: "Your candidate Vikram Joshi was Offered the position.", time: "1 day ago", color: "green" },
-    { text: "New job requisition 'Senior React Developer' assigned to you.", time: "2 days ago", color: "blue" }
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const statsRes = await api.get('/vendor/dashboard');
+        if (statsRes.data.success) {
+          setStats(statsRes.data.stats || stats);
+          setRecentUpdates(statsRes.data.recentUpdates || []);
+        }
+
+        const jobsRes = await api.get('/vendor/jobs');
+        if (jobsRes.data.success) {
+          setAssignedJobs(jobsRes.data.jobs || []);
+        }
+      } catch (error) {
+        console.error("Error fetching vendor dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  if (loading) return <div style={{ padding: '20px' }}>Loading dashboard...</div>;
 
   return (
     <>
@@ -29,7 +46,7 @@ function VendorDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Total Submitted</h3>
-              <p className="stat-number">48</p>
+              <p className="stat-number">{stats.totalSubmitted}</p>
               <span className="stat-change positive">↑ 12 this month</span>
             </div>
             <div className="stat-icon blue">📄</div>
@@ -37,7 +54,7 @@ function VendorDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Shortlisted</h3>
-              <p className="stat-number">14</p>
+              <p className="stat-number">{stats.shortlisted}</p>
               <span className="stat-change positive">↑ 3 this month</span>
             </div>
             <div className="stat-icon purple">⭐</div>
@@ -45,7 +62,7 @@ function VendorDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Interviews</h3>
-              <p className="stat-number">6</p>
+              <p className="stat-number">{stats.interviews}</p>
               <span className="stat-change positive">↑ 2 this week</span>
             </div>
             <div className="stat-icon orange">📅</div>
@@ -53,7 +70,7 @@ function VendorDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Hired</h3>
-              <p className="stat-number">3</p>
+              <p className="stat-number">{stats.hired}</p>
               <span className="stat-change positive">↑ 1 this month</span>
             </div>
             <div className="stat-icon green">🏆</div>

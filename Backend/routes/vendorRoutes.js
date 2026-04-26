@@ -1,5 +1,5 @@
 const express = require('express');
-const { getDashboardStats, getAssignedJobs, submitCandidate, getMyCandidates } = require('../controllers/vendorController');
+const { getDashboardStats, getAssignedJobs, submitCandidate, getMyCandidates, getProfile, updateProfile } = require('../controllers/vendorController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -11,5 +11,7 @@ router.get('/dashboard', getDashboardStats);
 router.get('/jobs', getAssignedJobs);
 router.post('/candidates', submitCandidate);
 router.get('/candidates', getMyCandidates);
+router.get('/profile', getProfile);
+router.put('/profile', updateProfile);
 
 module.exports = router;

@@ -1,24 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import api from "@/utils/api";
 import "@/styles/forms.css";
-
-const mockCandidates = [
-  { id: "C001", name: "Aditya Patel", role: "Senior React Developer", date: "2026-04-20", stage: "Interview", status: "Active" },
-  { id: "C002", name: "Sneha Sharma", role: "Full Stack Developer", date: "2026-04-19", stage: "Screened", status: "Active" },
-  { id: "C004", name: "Neha Gupta", role: "Data Analyst", date: "2026-04-15", stage: "Rejected", status: "Duplicate" },
-  { id: "C005", name: "Vikram Joshi", role: "Senior React Developer", date: "2026-04-18", stage: "Offered", status: "Active" },
-];
 
 function MyCandidates() {
   const { setMobileOpen } = useOutletContext();
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStage, setFilterStage] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = mockCandidates.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.role.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await api.get('/vendor/candidates');
+        if (res.data.success) {
+          setCandidates(res.data.candidates || []);
+        }
+      } catch (error) {
+        console.error("Error fetching candidates:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCandidates();
+  }, []);
+
+  const filtered = candidates.filter(c => {
+    const matchSearch = c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.role?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchStage = filterStage === "All" || c.stage === filterStage;
     return matchSearch && matchStage;
   });

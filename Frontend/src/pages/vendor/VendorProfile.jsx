@@ -1,29 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function VendorProfile() {
   const { setMobileOpen } = useOutletContext();
 
   const [formData, setFormData] = useState({
-    companyName: localStorage.getItem("demoUser") || "TechStaff Solutions",
-    contactPerson: "Rajesh Kumar",
-    email: "rajesh@techstaff.in",
-    phone: "+91 98765 43210",
-    website: "https://techstaff.in",
-    address: "123 Tech Park, Bangalore"
+    companyName: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    website: "",
+    address: ""
   });
+  const [loading, setLoading] = useState(true);
 
   const [slaFile, setSlaFile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get('/vendor/profile');
+        if (res.data.success && res.data.profile) {
+          setFormData(res.data.profile);
+        }
+      } catch (error) {
+        console.error("Error fetching vendor profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    alert("Vendor profile saved successfully! (Mock)");
+    try {
+      const res = await api.put('/vendor/profile', formData);
+      if (res.data.success) {
+        alert(res.data.message || "Vendor profile saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to save profile.");
+    }
   };
 
   return (

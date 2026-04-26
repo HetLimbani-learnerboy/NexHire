@@ -82,9 +82,32 @@ const getMyCandidates = async (req, res) => {
     }
 };
 
+const getProfile = async (req, res) => {
+    res.status(200).json({
+        success: true,
+        profile: {
+            companyName: "TechStaff Solutions",
+            contactPerson: "Rajesh Kumar",
+            email: "rajesh@techstaff.in",
+            phone: "+91 98765 43210",
+            website: "https://techstaff.in",
+            address: "123 Tech Park, Bangalore"
+        }
+    });
+};
+
+const updateProfile = async (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Profile updated successfully"
+    });
+};
+
 module.exports = {
     getDashboardStats,
     getAssignedJobs,
     submitCandidate,
-    getMyCandidates
+    getMyCandidates,
+    getProfile,
+    updateProfile
 };
