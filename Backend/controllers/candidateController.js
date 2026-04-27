@@ -4,7 +4,7 @@ const pool = require("../config/db");
 // GET /api/candidates — list with filters + pagination
 const getCandidates = async (req, res) => {
     try {
-        const { status, search, page = 1, limit = 50 } = req.query;
+        const { status, search, page = 1, limit = 50, vendor_id } = req.query;
         let query = "SELECT * FROM candidates WHERE 1=1";
         const values = [];
         let idx = 1;
@@ -12,6 +12,10 @@ const getCandidates = async (req, res) => {
         if (status && status !== "All") {
             query += ` AND status = $${idx++}`;
             values.push(status);
+        }
+        if (vendor_id) {
+            query += ` AND vendor_id = $${idx++}`;
+            values.push(vendor_id);
         }
         if (search) {
             query += ` AND (full_name ILIKE $${idx} OR job_title ILIKE $${idx} OR vendor_name ILIKE $${idx})`;

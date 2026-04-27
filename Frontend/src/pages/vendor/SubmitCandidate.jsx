@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function SubmitCandidate() {
   const { setMobileOpen } = useOutletContext();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -18,6 +20,18 @@ function SubmitCandidate() {
   const [loadingJobs, setLoadingJobs] = useState(true);
 
   useEffect(() => {
+    fetch("http://localhost:5001/api/jobs?status=Open")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setActiveJobs(data.jobs);
+        }
+        setLoadingJobs(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch jobs:", err);
+        setLoadingJobs(false);
+      });
     const fetchJobs = async () => {
       try {
         const res = await api.get('/vendor/jobs');
@@ -35,6 +49,37 @@ function SubmitCandidate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const selectedJob = activeJobs.find(job => job.id.toString() === formData.jobId);
+    
+    const candidatePayload = {
+      full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+      email: formData.email,
+      phone: formData.phone,
+      job_id: formData.jobId,
+      job_title: selectedJob ? selectedJob.title : "",
+      vendor_id: user?.id || null,
+      vendor_name: user?.name || "Unknown Vendor",
+      status: "Submitted"
+    };
+
+    try {
+      const response = await fetch("http://localhost:5001/api/candidates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(candidatePayload)
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(`Candidate ${candidatePayload.full_name} submitted successfully!`);
+        setFormData({ firstName: "", lastName: "", email: "", phone: "", jobId: "" });
+        setResume(null);
+      } else {
+        alert("Failed to submit candidate: " + data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting candidate");
     try {
       // Skipping resume upload for now per instructions
       const res = await api.post('/vendor/candidates', formData);
@@ -91,7 +136,7 @@ function SubmitCandidate() {
               <div className="form-group">
                 <label className="form-label">Assign to Job Requisition</label>
                 <select className="form-select" required value={formData.jobId} onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}>
-                  <option value="">Select an active job</option>
+                  <option value="">{loadingJobs ? "Loading jobs..." : "Select an active job"}</option>
                   {activeJobs.map(job => (
                     <option key={job.id} value={job.id}>{job.id} - {job.title}</option>
                   ))}

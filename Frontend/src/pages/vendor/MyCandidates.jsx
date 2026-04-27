@@ -2,18 +2,41 @@ import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import { useAuth } from "@/context/AuthContext";
 import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function MyCandidates() {
   const { setMobileOpen } = useOutletContext();
+  const { user } = useAuth();
+  const [candidates, setCandidates] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStage, setFilterStage] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchCandidates = async () => {
+    try {
+      let url = `http://localhost:5001/api/candidates?page=${currentPage}&limit=10&vendor_id=${user?.id}`;
+      if (filterStage !== "All") url += `&status=${filterStage}`;
+      if (searchQuery) url += `&search=${searchQuery}`;
+      
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setCandidates(data.candidates);
+        setTotalPages(data.pagination.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Error fetching candidates:", err);
+    }
+  };
 
   useEffect(() => {
+    if (user?.id) fetchCandidates();
+  }, [user?.id, currentPage, filterStage, searchQuery]);
     const fetchCandidates = async () => {
       try {
         const res = await api.get('/vendor/candidates');
@@ -46,18 +69,18 @@ function MyCandidates() {
     <tr key={candidate.id}>
       <td>
         <div className="table-user">
-          <div className="table-user-avatar">{candidate.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+          <div className="table-user-avatar">{candidate.full_name?.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
           <div className="table-user-info">
-            <h4>{candidate.name}</h4>
-            <p>{candidate.id}</p>
+            <h4>{candidate.full_name}</h4>
+            <p>ID: {candidate.id}</p>
           </div>
         </div>
       </td>
-      <td>{candidate.role}</td>
-      <td>{new Date(candidate.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
-      <td>{getStageBadge(candidate.stage)}</td>
+      <td>{candidate.job_title}</td>
+      <td>{candidate.created_at ? new Date(candidate.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
+      <td>{getStageBadge(candidate.status)}</td>
       <td>
-        {candidate.status === "Duplicate" ? (
+        {candidate.is_duplicate ? (
           <span className="badge badge-danger">Duplicate</span>
         ) : (
           <span className="badge badge-success">Active</span>
@@ -77,7 +100,7 @@ function MyCandidates() {
       <div className="dashboard-page">
         <div className="page-header">
           <div className="page-header-left">
-            <h2>Submitted Candidates ({filtered.length})</h2>
+            <h2>Submitted Candidates</h2>
             <p>Monitor pipeline stages and statuses for your submissions.</p>
           </div>
         </div>
@@ -98,7 +121,7 @@ function MyCandidates() {
           </select>
         </div>
 
-        <Table columns={columns} data={filtered} renderRow={renderRow} currentPage={currentPage} totalPages={1} onPageChange={setCurrentPage} />
+        <Table columns={columns} data={candidates} renderRow={renderRow} currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </>
   );

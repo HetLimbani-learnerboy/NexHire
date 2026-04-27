@@ -23,6 +23,8 @@ const interviewRoutes = require("./routes/interviewRoutes");
 const vendorRoutes = require("./routes/vendorRoutes");
 const userRoutes = require("./routes/userRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const selectionRoutes = require("./routes/selectionRoutes");
 
 const app = express();
 
@@ -84,6 +86,8 @@ app.get("/", (req, res) => {
 app.use("/api/jobs", jobRoutes);
 app.use("/api/candidates", candidateRoutes);
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/selections", selectionRoutes);
 
 // ── Start server ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5001;

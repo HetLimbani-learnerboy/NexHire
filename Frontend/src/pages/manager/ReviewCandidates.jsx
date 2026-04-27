@@ -13,6 +13,23 @@ function ReviewCandidates() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
+  React.useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/api/reviews");
+      const data = await res.json();
+      if (data.success) {
+        setCandidates(data.reviews);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const filtered = candidates.filter(c => c.candidate_name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.role?.toLowerCase().includes(searchQuery.toLowerCase()));
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
@@ -38,6 +55,36 @@ function ReviewCandidates() {
 
   const markAsReviewed = async () => {
     try {
+      const res = await fetch(`http://localhost:5001/api/reviews/${selectedCandidate.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Reviewed" })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchReviews();
+        setShowProfileModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const markAsRejected = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/reviews/${selectedCandidate.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Rejected" })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchReviews();
+        setShowProfileModal(false);
+        alert("Candidate rejected.");
+      }
+    } catch (err) {
+      console.error(err);
       const res = await api.put(`/manager/candidates/${selectedCandidate.id}/status`, { status: "Reviewed" });
       if (res.data.success) {
         setCandidates(candidates.map(c => c.id === selectedCandidate.id ? { ...c, status: "Reviewed" } : c));
@@ -54,10 +101,10 @@ function ReviewCandidates() {
     <tr key={candidate.id}>
       <td>
         <div className="table-user">
-          <div className="table-user-avatar">{candidate.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+          <div className="table-user-avatar">{candidate.candidate_name?.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
           <div className="table-user-info">
-            <h4>{candidate.name}</h4>
-            <p>{candidate.id}</p>
+            <h4>{candidate.candidate_name}</h4>
+            <p>ID: {candidate.id || candidate.candidate_id}</p>
           </div>
         </div>
       </td>
@@ -101,16 +148,16 @@ function ReviewCandidates() {
           <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
             <div className="modal-content slide-up" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "700px" }}>
               <div className="modal-header">
-                <h2>Candidate Profile: {selectedCandidate.name}</h2>
+                <h2>Candidate Profile: {selectedCandidate.candidate_name}</h2>
                 <button className="modal-close" onClick={() => setShowProfileModal(false)}>✕</button>
               </div>
               <div className="modal-body">
                 <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
                   <div className="vendor-perf-avatar" style={{ width: "80px", height: "80px", fontSize: "24px" }}>
-                    {selectedCandidate.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                    {selectedCandidate.candidate_name?.split(" ").map(w => w[0]).join("").slice(0, 2)}
                   </div>
                   <div>
-                    <h3 style={{ margin: "0 0 8px" }}>{selectedCandidate.name}</h3>
+                    <h3 style={{ margin: "0 0 8px" }}>{selectedCandidate.candidate_name}</h3>
                     <p style={{ margin: "0 0 4px", color: "var(--text-secondary)" }}><strong>Role:</strong> {selectedCandidate.role}</p>
                     <p style={{ margin: "0 0 4px", color: "var(--text-secondary)" }}><strong>Experience:</strong> {selectedCandidate.experience}</p>
                     <p style={{ margin: 0, color: "var(--text-secondary)" }}><strong>Submitted by:</strong> {selectedCandidate.source}</p>
@@ -131,9 +178,9 @@ function ReviewCandidates() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button className="btn btn-danger" onClick={() => alert("Candidate rejected.")}>Reject</button>
+                <button className="btn btn-danger" onClick={markAsRejected}>Reject</button>
                 <button className="btn btn-outline" onClick={() => setShowProfileModal(false)}>Close</button>
-                {selectedCandidate.status === "Pending Review" && (
+                {(selectedCandidate.status === "Pending Review" || !selectedCandidate.status) && (
                   <button className="btn btn-success" onClick={markAsReviewed}>Mark as Reviewed & Select for Interview</button>
                 )}
               </div>
