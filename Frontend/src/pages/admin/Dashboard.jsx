@@ -412,7 +412,7 @@ function Dashboard() {
                       {v.rating}%
                     </span>
                   </div>
-                )
+                ) 
               )}
 
             </div>
