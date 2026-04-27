@@ -1,4 +1,4 @@
-const { pool } = require("../app");
+const pool = require("../config/db");
 
 const createCandidateStatusTable = async () => {
   await pool.query(`
