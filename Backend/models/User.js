@@ -1,4 +1,5 @@
-const { pool } = require("../app"); 
+const pool = require("../config/db");
+
 const createUsersTable = async () => { 
     await pool.query(` 
         CREATE TABLE IF NOT EXISTS users ( 
