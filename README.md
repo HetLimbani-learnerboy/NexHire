@@ -50,7 +50,7 @@ Moving forward, our focus is entirely on finalizing Phase 2 deliverables to prep
 ## 6. How to Run Locally
 
 ### Backend Setup
-1. Open a terminal and navigate to the `Backend` directory && setup .env file as given in the .env.example:
+1. Open a terminal and navigate to the `Backend` directory:
    ```bash
    cd Backend
    ```
