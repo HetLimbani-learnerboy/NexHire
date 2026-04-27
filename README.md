@@ -50,7 +50,7 @@ Moving forward, our focus is entirely on finalizing Phase 2 deliverables to prep
 ## 6. How to Run Locally
 
 ### Backend Setup
-1. Open a terminal and navigate to the `Backend` directory:
+1. Open a terminal and navigate to the `Backend` directory && setup .env file as given in the .env.example:
    ```bash
    cd Backend
    ```
@@ -61,7 +61,7 @@ Moving forward, our focus is entirely on finalizing Phase 2 deliverables to prep
 3. Copy `.env.example` to `.env` and configure your database and JWT secrets.
 4. Start the development server:
    ```bash
-   npm run dev
+   node app.js
    ```
 
 ### Frontend Setup
