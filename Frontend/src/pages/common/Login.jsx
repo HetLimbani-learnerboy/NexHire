@@ -13,7 +13,7 @@ Premium UI + Validation + Demo Credentials
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setAuthFromAPI } = useAuth();
 
   /* States */
   const [email, setEmail] = useState("");
@@ -35,50 +35,85 @@ function Login() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      const result = login(email, password);
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-      if (result.success) {
-        navigate("/dashboard");
+      const data = await response.json();
+
+      if (data.success && data.token) {
+        // Save token and user info to localStorage
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("demoUser", data.user.full_name);
+        localStorage.setItem("demoRole", data.user.role);
+        localStorage.setItem("email", data.user.email);
+
+        // Update AuthContext to sync with localStorage
+        setAuthFromAPI(data.user);
+
+        // Navigate based on role
+        const role = data.user.role.toLowerCase();
+        if (role === "admin") {
+          navigate("/dashboard");
+        } else if (role === "hr") {
+          navigate("/hr-dashboard");
+        } else if (role === "vendor") {
+          navigate("/vendor-dashboard");
+        } else if (role === "manager") {
+          navigate("/manager-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
-        setError(result.message || "Invalid credentials.");
+        setError(data.message || "Invalid credentials.");
       }
-
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Connection error. Please check if the backend is running on http://localhost:5001");
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   };
 
   /* Demo Login Fill */
   const fillDemo = (type) => {
-    if (type === "admin") {
-      setEmail("admin@nexhire.com");
-      setPassword("nexhire123");
-      localStorage.setItem("demoUser", "Sahil Dobaria");
-      localStorage.setItem("demoRole", "admin");
-      localStorage.setItem("email", "admin@nexhire.com");
-    }
+    const demoAccounts = {
+      admin: {
+        email: "admin@nexhire.com",
+        password: "nexhire123",
+        name: "Sahil Dobaria",
+        role: "admin"
+      },
+      hr: {
+        email: "hr@nexhire.com",
+        password: "nexhire123",
+        name: "Het Limbani",
+        role: "hr"
+      },
+      vendor: {
+        email: "vendor@nexhire.com",
+        password: "nexhire123",
+        name: "Rohan Upadhyay",
+        role: "vendor"
+      },
+      manager: {
+        email: "manager@nexhire.com",
+        password: "nexhire123",
+        name: "Priya Sharma",
+        role: "manager"
+      }
+    };
 
-    if (type === "hr") {
-      setEmail("hr@nexhire.com");
-      setPassword("nexhire123");
-      localStorage.setItem("demoUser", "Het Limbani");
-      localStorage.setItem("demoRole", "hr");
-      localStorage.setItem("email", "hr@nexhire.com");
-    }
-
-    if (type === "vendor") {
-      setEmail("vendor@nexhire.com");
-      setPassword("nexhire123");
-      localStorage.setItem("demoUser", "Rohan Upadhyay");
-      localStorage.setItem("demoRole", "vendor");
-      localStorage.setItem("email", "vendor@nexhire.com");
-    }
-    if (type === "manager") {
-      setEmail("manager@nexhire.com");
-      setPassword("nexhire123");
-      localStorage.setItem("demoUser", "Priya Sharma");
-      localStorage.setItem("demoRole", "manager");
-      localStorage.setItem("email", "manager@nexhire.com");
+    const account = demoAccounts[type];
+    if (account) {
+      setEmail(account.email);
+      setPassword(account.password);
     }
   };
 

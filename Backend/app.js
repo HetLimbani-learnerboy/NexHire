@@ -1,71 +1,3 @@
-// const express = require("express");
-// const cors = require("cors");
-// const { Pool } = require("pg");
-// require("dotenv").config();
-
-// const app = express();
-
-// app.use(cors());
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-
-// const pool = new Pool({
-//     connectionString: process.env.DATABASE_URL,
-//     ssl: {
-//         rejectUnauthorized: false
-//     }
-// });
-
-// module.exports = { app, pool };
-
-// // const { createUsersTable } = require("./models/User");
-// // const { createVendorsTable } = require("./models/Vendor");
-// // const { createJobsTable } = require("./models/Job");
-// // const { createJobVendorsTable } = require("./models/JobVendor");
-// // const { createCandidatesTable } = require("./models/Candidate");
-// // const { createCandidateStatusTable } = require("./models/CandidateStatus");
-// // const { createInterviewsTable } = require("./models/Interview");
-// // const { createFeedbackTable } = require("./models/Feedback");
-// // const { createNotificationsTable } = require("./models/Notification");
-
-
-// const initDB = async () => {
-//     try {
-//         await pool.connect();
-//         console.log("Connected to Neon database successfully");
-
-//         //     await createUsersTable();
-//         //     await createVendorsTable();
-//         //     await createJobsTable();
-//         //     await createJobVendorsTable();
-//         //     await createCandidatesTable();
-//         //     await createCandidateStatusTable();
-//         //     await createInterviewsTable();
-//         //     await createFeedbackTable();
-//         //     await createNotificationsTable();
-
-//         //     console.log("All tables created successfully");
-//     } catch (err) {
-//         console.error("Database connection error:", err);
-//     }
-// };
-
-// initDB();
-
-// app.get("/", (req, res) => {
-//     res.status(200).json({
-//         success: true,
-//         message: "NexHire ATS Backend Running Successfully"
-//     });
-// });
-
-// const PORT = process.env.PORT || 5001;
-
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
-
-
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -76,8 +8,29 @@ const vendorRoutes = require("./routes/vendorRoutes");
 const managerRoutes = require("./routes/managerRoutes");
 require("dotenv").config();
 
+// ── Centralized pool (no circular dependency) ─────────────────────────────────
+const pool = require("./config/db");
+
+// ── Import table-creation functions ───────────────────────────────────────────
+const { createUsersTable } = require("./models/User");
+const { createJobsTable } = require("./models/Job");
+const { createCandidatesTable } = require("./models/Candidate");
+const { createInterviewsTable } = require("./models/Interview");
+const { createCandidateStatusTable } = require("./models/CandidateStatus");
+const { createDemoUsers } = require("./seed");
+
+// ── Import route files ────────────────────────────────────────────────────────
+const authRoutes = require("./routes/authRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const candidateRoutes = require("./routes/candidateRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
+const vendorRoutes = require("./routes/vendorRoutes");
+const userRoutes = require("./routes/userRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+
 const app = express();
 
+<<<<<<< HEAD
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true
@@ -90,28 +43,27 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/vendor", vendorRoutes);
 app.use("/api/manager", managerRoutes);
+=======
+// ── Middleware ─────────────────────────────────────────────────────────────────
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+>>>>>>> 9c896c23ed50f1ba724062b4dde8fb5a0531b81d
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    },
-    connectionTimeoutMillis: 10000, 
-    idleTimeoutMillis: 30000,      
-    max: 10,                    
-});
-
-
-pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
-});
-
+// ── Database Initialisation ───────────────────────────────────────────────────
 const initDB = async () => {
     let client;
     try {
-        client = await pool.connect(); 
+        client = await pool.connect();
         console.log("✅ Connected to Neon database successfully");
 
+<<<<<<< HEAD
         // Conditionally create tables if they do not exist
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -170,6 +122,29 @@ const initDB = async () => {
         console.log("✅ Database tables verified/created");
     } catch (err) {
         console.error("❌ Database connection/setup error:", err);
+=======
+        // Auto-create tables on startup (order matters for FK deps)
+        await createUsersTable();
+        console.log("✅ Users table ready");
+
+        await createJobsTable();
+        console.log("✅ Jobs table ready");
+
+        await createCandidatesTable();
+        console.log("✅ Candidates table ready");
+
+        await createCandidateStatusTable();
+        console.log("✅ CandidateStatus table ready");
+
+        await createInterviewsTable();
+        console.log("✅ Interviews table ready");
+
+        // Create demo users
+        await createDemoUsers();
+        console.log("✅ Demo users initialized");
+    } catch (err) {
+        console.error("❌ Database initialisation error:", err);
+>>>>>>> 9c896c23ed50f1ba724062b4dde8fb5a0531b81d
     } finally {
         if (client) client.release();
     }
@@ -177,16 +152,24 @@ const initDB = async () => {
 
 initDB();
 
+// ── Health-check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
     res.status(200).json({
         success: true,
-        message: "NexHire ATS Backend Running Successfully"
+        message: "NexHire ATS Backend Running Successfully",
     });
 });
 
+// ── API Routes ────────────────────────────────────────────────────────────────
+app.use("/api/jobs", jobRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/interviews", interviewRoutes);
+
+// ── Start server ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
 });
 
+// Export for any file that still imports from app.js (backwards compat)
 module.exports = { app, pool };

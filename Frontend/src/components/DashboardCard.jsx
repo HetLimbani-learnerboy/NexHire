@@ -1,18 +1,43 @@
 import React from "react";
 
-function DashboardCard({ icon, iconClass, label, value, change, changeType }) {
+function DashboardCard({
+  icon,
+  iconClass = "blue",
+  label,
+  value,
+  change,
+  changeType = "positive"
+}) {
+  const arrow =
+    changeType === "negative"
+      ? "↓"
+      : "↑";
+
   return (
     <div className="stat-card">
+
       <div className="stat-info">
         <h3>{label}</h3>
-        <p className="stat-number">{value}</p>
+
+        <p className="stat-number">
+          {value}
+        </p>
+
         {change && (
-          <span className={`stat-change ${changeType || "positive"}`}>
-            {changeType === "negative" ? "↓" : "↑"} {change}
+          <span
+            className={`stat-change ${changeType}`}
+          >
+            {arrow} {change}
           </span>
         )}
       </div>
-      <div className={`stat-icon ${iconClass || "blue"}`}>{icon}</div>
+
+      <div
+        className={`stat-icon ${iconClass}`}
+      >
+        {icon}
+      </div>
+
     </div>
   );
 }

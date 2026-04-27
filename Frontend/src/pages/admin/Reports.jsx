@@ -7,6 +7,34 @@ import "@/styles/forms.css";
 function Reports() {
   const { setMobileOpen } = useOutletContext();
   const [dateRange, setDateRange] = React.useState({ from: "2026-01-01", to: "2026-04-30" });
+  const [data, setData] = React.useState(null);
+
+  React.useEffect(() => {
+    fetch("http://localhost:5001/api/admin/reports", {
+      headers: {
+        "role": "admin"
+      }
+    })
+      .then(r => r.json())
+      .then(res => {
+        if(res.success) {
+          setData(res);
+        } else {
+          // Fallback or handle error if needed
+          console.error("Failed to load reports:", res.message);
+          setData({ totalQuarter: 0, totalHired: 0, avgDays: 0, monthlyHires: [], statusDist: [], vendorMetrics: [] });
+        }
+      })
+      .catch(err => {
+        console.error("API error:", err);
+        // Fallback so it stops loading even on complete network failure
+        setData({ totalQuarter: 0, totalHired: 0, avgDays: 0, monthlyHires: [], statusDist: [], vendorMetrics: [] });
+      });
+  }, []);
+
+  if (!data) return <div style={{padding:"2rem", textAlign:"center"}}>Loading reports...</div>;
+
+  const { totalQuarter, totalHired, avgDays, monthlyHires, statusDist, vendorMetrics } = data;
 
   const handleExportCSV = () => {
     const csvContent = "data:text/csv;charset=utf-8,Vendor,Submitted,Hired,Ratio,AvgDays,Rating\n" + 
@@ -20,26 +48,7 @@ function Reports() {
     document.body.removeChild(link);
   };
 
-  const monthlyHires = [
-    { month: "Jan", value: 12 }, { month: "Feb", value: 18 }, { month: "Mar", value: 15 },
-    { month: "Apr", value: 28 }, { month: "May", value: 22 }, { month: "Jun", value: 31 },
-  ];
-  const maxHires = Math.max(...monthlyHires.map(m => m.value));
-
-  const statusDist = [
-    { label: "Hired", value: 28, percent: 22, color: "#10b981" },
-    { label: "In Pipeline", value: 58, percent: 45, color: "#3b82f6" },
-    { label: "Rejected", value: 24, percent: 19, color: "#ef4444" },
-    { label: "On Hold", value: 18, percent: 14, color: "#f59e0b" },
-  ];
-
-  const vendorMetrics = [
-    { name: "TechStaff Solutions", submitted: 48, hired: 12, ratio: "25%", avgDays: 14, rating: 4.8 },
-    { name: "InnoRecruit Pvt Ltd", submitted: 35, hired: 8, ratio: "23%", avgDays: 18, rating: 4.5 },
-    { name: "CloudHire Global", submitted: 29, hired: 6, ratio: "21%", avgDays: 22, rating: 4.2 },
-    { name: "TalentForce India", submitted: 41, hired: 9, ratio: "22%", avgDays: 16, rating: 4.6 },
-    { name: "HireWave Tech", submitted: 22, hired: 4, ratio: "18%", avgDays: 25, rating: 3.9 },
-  ];
+  const maxHires = Math.max(1, ...monthlyHires.map(m => m.value));
 
   let gradientStops = "";
   let currentDeg = 0;
@@ -48,16 +57,16 @@ function Reports() {
     gradientStops += `${item.color} ${currentDeg}deg ${currentDeg + deg}deg, `;
     currentDeg += deg;
   });
-  gradientStops = gradientStops.slice(0, -2);
+  gradientStops = gradientStops.slice(0, -2) || "transparent 0deg 360deg";
 
   return (
     <>
       <Navbar title="Reports" subtitle="Analytics, metrics, and vendor performance insights" onHamburgerClick={() => setMobileOpen(true)} />
       <div className="dashboard-page">
         <div className="reports-grid">
-          <div className="report-metric-card navy"><div className="report-metric-icon navy">📊</div><h2>128</h2><p>Total Candidates This Quarter</p></div>
-          <div className="report-metric-card emerald"><div className="report-metric-icon emerald">✅</div><h2>28</h2><p>Successful Hires</p></div>
-          <div className="report-metric-card amber"><div className="report-metric-icon amber">⏱</div><h2>18 days</h2><p>Avg. Time to Fill</p></div>
+          <div className="report-metric-card navy"><div className="report-metric-icon navy">📊</div><h2>{totalQuarter}</h2><p>Total Candidates This Quarter</p></div>
+          <div className="report-metric-card emerald"><div className="report-metric-icon emerald">✅</div><h2>{totalHired}</h2><p>Successful Hires</p></div>
+          <div className="report-metric-card amber"><div className="report-metric-icon amber">⏱</div><h2>{avgDays} days</h2><p>Avg. Time to Fill</p></div>
         </div>
 
         <div className="reports-two-col">
@@ -81,7 +90,7 @@ function Reports() {
             <div className="chart-body">
               <div className="donut-chart-container">
                 <div className="donut-chart" style={{ background: `conic-gradient(${gradientStops})` }}>
-                  <div className="donut-center"><h3>128</h3><p>Total</p></div>
+                  <div className="donut-center"><h3>{totalQuarter}</h3><p>Total</p></div>
                 </div>
                 <div className="donut-legend">
                   {statusDist.map(item => (

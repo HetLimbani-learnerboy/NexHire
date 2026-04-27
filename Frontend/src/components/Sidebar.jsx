@@ -106,11 +106,6 @@ function Sidebar({
       to: "/interviews",
       label: "Interviews",
       icon: "⬡"
-    },
-    {
-      to: "/reports",
-      label: "Reports",
-      icon: "✦"
     }
   ];
 

@@ -1,4 +1,4 @@
-const { pool } = require("../app");
+const pool = require("../config/db");
 
 const createNotificationsTable = async () => {
   await pool.query(`

@@ -1,4 +1,4 @@
-const { pool } = require("../app"); 
+const pool = require("../config/db");
 const createVendorsTable = async () => { 
     await pool.query(` 
         CREATE TABLE IF NOT EXISTS vendors ( 

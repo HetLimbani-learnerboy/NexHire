@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -12,6 +12,24 @@ const MOCK_USERS = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userData = localStorage.getItem("user");
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
 
   const login = (email, password) => {
     const key = email.split("@")[0];
@@ -27,10 +45,20 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("demoUser");
+    localStorage.removeItem("demoRole");
+    localStorage.removeItem("email");
+  };
+
+  const setAuthFromAPI = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, setAuthFromAPI }}>
       {children}
     </AuthContext.Provider>
   );
