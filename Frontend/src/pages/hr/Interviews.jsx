@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import "@/styles/forms.css";
 
 const API_BASE = "http://localhost:5001/api/interviews";
@@ -220,7 +220,7 @@ function Interviews() {
 
         {/* Table */}
         {loading ? (
-          <Loader />
+          <Skeleton type="table" />
         ) : (
           <div className="dashboard-card">
             <div className="data-table-container" style={{ border: "none" }}>

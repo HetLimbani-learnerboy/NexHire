@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import "../../styles/forms.css";
 
 import {
@@ -464,7 +464,7 @@ function Jobs() {
         )}
 
         {loading ? (
-          <Loader />
+          <Skeleton type="table" />
         ) : (
           <Table
             columns={columns}

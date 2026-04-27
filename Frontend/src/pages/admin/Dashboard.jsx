@@ -7,12 +7,8 @@ import React, {
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import DashboardCard from "@/components/DashboardCard";
-<<<<<<< HEAD
-import { useAuth } from "@/context/AuthContext";
-=======
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import { useAuth } from "../../context/AuthContext";
->>>>>>> 9c896c23ed50f1ba724062b4dde8fb5a0531b81d
 
 const API =
   "http://localhost:5001/api/dashboard";
@@ -173,7 +169,9 @@ function Dashboard() {
             )
           }
         />
-        <Loader />
+        <div className="dashboard-page">
+          <Skeleton type="dashboard" />
+        </div>
       </>
     );
   }

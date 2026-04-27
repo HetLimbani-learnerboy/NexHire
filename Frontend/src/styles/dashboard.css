@@ -312,13 +312,14 @@
 .page-header-left h2 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: inherit;
   margin: 0;
 }
 
 .page-header-left p {
   font-size: 13px;
-  color: var(--text-muted);
+  color: inherit;
+  opacity: 0.85;
   margin: 4px 0 0;
 }
 
