@@ -36,26 +36,11 @@ function Feedback() {
     recommendation: "Hire"
   });
 
-  useEffect(() => {
-    const fetchInterviews = async () => {
-      try {
-        const res = await api.get('/manager/interviews');
-        if (res.data.success) {
-          setInterviews(res.data.interviews || []);
-        }
-      } catch (error) {
-        console.error("Error fetching interviews:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInterviews();
-  }, []);
+
 
   const handleOpenFeedback = (interview) => {
     setSelectedInterview(interview);
     if (interview.feedback_rating) {
-    if (interview.feedbackStatus === "Submitted") {
       // Mock pre-filled data or fetch from backend
       setFeedbackForm({
         technicalScore: interview.feedback_rating, cultureScore: interview.feedback_rating, communicationScore: interview.feedback_rating,
@@ -87,16 +72,6 @@ function Feedback() {
       }
     } catch (err) {
       console.error(err);
-    try {
-      const res = await api.post(`/manager/interviews/${selectedInterview.id}/feedback`, { feedback: feedbackForm });
-      if (res.data.success) {
-        setInterviews(interviews.map(i => i.id === selectedInterview.id ? { ...i, feedbackStatus: "Submitted" } : i));
-        setShowFeedbackModal(false);
-        alert(res.data.message || "Feedback submitted successfully!");
-      }
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-      alert("Failed to submit feedback.");
     }
   };
 
