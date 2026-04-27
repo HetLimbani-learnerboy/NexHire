@@ -12,11 +12,13 @@ import {
   FiLayers,
   FiCheckCircle,
   FiAlertCircle,
-  FiClock
+  FiClock,
+  FiChevronDown,
+  FiChevronUp
 } from "react-icons/fi";
 
 import Navbar from "@/components/Navbar";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import "@/styles/pipeline.css";
 import "@/styles/forms.css";
 
@@ -44,6 +46,7 @@ function Pipeline() {
   const [submitting, setSubmitting] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [expandedCards, setExpandedCards] = useState({});
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -151,6 +154,13 @@ function Pipeline() {
     }
 
     setDraggedId(null);
+  };
+
+  const toggleCard = (id) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   /* =====================================================
@@ -318,7 +328,7 @@ function Pipeline() {
 
         {/* BOARD */}
         {loading ? (
-          <Loader />
+          <Skeleton type="kanban" />
         ) : (
           <div className="pipeline-board">
             {stages.map((stage) => {
@@ -361,6 +371,8 @@ function Pipeline() {
                             c.id
                           )
                         }
+                        onClick={() => toggleCard(c.id)}
+                        style={{ cursor: "pointer" }}
                       >
                         <div className="pipeline-card-header">
                           <h4>
@@ -380,25 +392,33 @@ function Pipeline() {
                             "No Role"}
                         </p>
 
-                        <small>
-                          <FiLayers />
-                          {c.vendor_name ||
-                            "Direct Source"}
-                        </small>
+                        {expandedCards[c.id] && (
+                          <div className="pipeline-card-details" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", borderTop: "1px dashed #e2e8f0", paddingTop: "10px" }}>
+                            <small>
+                              <FiLayers />
+                              {c.vendor_name ||
+                                "Direct Source"}
+                            </small>
 
-                        {c.email && (
-                          <small>
-                            <FiMail />
-                            {c.email}
-                          </small>
-                        )}
+                            {c.email && (
+                              <small>
+                                <FiMail />
+                                {c.email}
+                              </small>
+                            )}
 
-                        {c.phone && (
-                          <small>
-                            <FiPhone />
-                            {c.phone}
-                          </small>
+                            {c.phone && (
+                              <small>
+                                <FiPhone />
+                                {c.phone}
+                              </small>
+                            )}
+                          </div>
                         )}
+                        
+                        <div style={{ textAlign: "center", color: "#94a3b8", marginTop: expandedCards[c.id] ? "8px" : "4px", fontSize: "16px" }}>
+                          {expandedCards[c.id] ? <FiChevronUp /> : <FiChevronDown />}
+                        </div>
                       </div>
                     ))}
 

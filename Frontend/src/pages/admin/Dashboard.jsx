@@ -7,7 +7,7 @@ import React, {
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import DashboardCard from "@/components/DashboardCard";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import { useAuth } from "../../context/AuthContext";
 
 const API =
@@ -169,7 +169,9 @@ function Dashboard() {
             )
           }
         />
-        <Loader />
+        <div className="dashboard-page">
+          <Skeleton type="dashboard" />
+        </div>
       </>
     );
   }

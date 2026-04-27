@@ -205,6 +205,7 @@
 
 .pipeline-board{
   display:flex;
+  align-items:flex-start;
   gap:22px;
   overflow-x:auto;
   padding-bottom:24px;
@@ -232,7 +233,6 @@
   border-radius:24px;
   display:flex;
   flex-direction:column;
-  max-height:calc(100vh - 200px);
   box-shadow:var(--shadow-sm);
   transition:var(--tr);
   animation:rise .55s ease;

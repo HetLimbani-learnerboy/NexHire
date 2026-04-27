@@ -1,14 +1,17 @@
 // Source: :contentReference[oaicite:0]{index=0}
 
 import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function FinalSelection() {
   const { setMobileOpen } = useOutletContext();
   const [decisions, setDecisions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [offerDetails, setOfferDetails] = useState({ salary: "", joiningDate: "", notes: "" });
@@ -42,6 +45,32 @@ function FinalSelection() {
           if (data.success) fetchSelections();
         } catch (err) {
           console.error(err);
+  useEffect(() => {
+    const fetchDecisions = async () => {
+      try {
+        const res = await api.get('/manager/decisions');
+        if (res.data.success) {
+          setDecisions(res.data.decisions || []);
+        }
+      } catch (error) {
+        console.error("Error fetching decisions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDecisions();
+  }, []);
+
+  const handleDecision = async (candidate, action) => {
+    if (action === "Reject") {
+      if (window.confirm(`Are you sure you want to reject ${candidate.candidate}?`)) {
+        try {
+          const res = await api.post(`/manager/decisions/${candidate.id}`, { status: "Rejected" });
+          if (res.data.success) {
+            setDecisions(decisions.map(d => d.id === candidate.id ? { ...d, status: "Rejected" } : d));
+          }
+        } catch (error) {
+          console.error("Error rejecting candidate:", error);
         }
       }
     } else if (action === "Offer") {
@@ -71,6 +100,16 @@ function FinalSelection() {
       }
     } catch (err) {
       console.error(err);
+      const res = await api.post(`/manager/decisions/${selectedCandidate.id}`, { status: "Offered", offerDetails });
+      if (res.data.success) {
+        setDecisions(decisions.map(d => d.id === selectedCandidate.id ? { ...d, status: "Offered" } : d));
+        setShowOfferModal(false);
+        setOfferDetails({ salary: "", joiningDate: "", notes: "" });
+        alert("Offer request sent to HR!");
+      }
+    } catch (error) {
+      console.error("Error submitting offer:", error);
+      alert("Failed to submit offer.");
     }
   };
 

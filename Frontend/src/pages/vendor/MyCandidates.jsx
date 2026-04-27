@@ -3,12 +3,15 @@ import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function MyCandidates() {
   const { setMobileOpen } = useOutletContext();
   const { user } = useAuth();
   const [candidates, setCandidates] = useState([]);
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStage, setFilterStage] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +37,26 @@ function MyCandidates() {
   useEffect(() => {
     if (user?.id) fetchCandidates();
   }, [user?.id, currentPage, filterStage, searchQuery]);
+    const fetchCandidates = async () => {
+      try {
+        const res = await api.get('/vendor/candidates');
+        if (res.data.success) {
+          setCandidates(res.data.candidates || []);
+        }
+      } catch (error) {
+        console.error("Error fetching candidates:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCandidates();
+  }, []);
+
+  const filtered = candidates.filter(c => {
+    const matchSearch = c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.role?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStage = filterStage === "All" || c.stage === filterStage;
+    return matchSearch && matchStage;
+  });
 
   const getStageBadge = (stage) => {
     const m = { Submitted: "badge-neutral", Screened: "badge-info", Interview: "badge-warning", Offered: "badge-success", Rejected: "badge-danger", Hired: "badge-success" };
