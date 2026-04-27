@@ -1,27 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import { useAuth } from "@/context/AuthContext";
 import "@/styles/forms.css";
-
-const mockCandidates = [
-  { id: "C001", name: "Aditya Patel", role: "Senior React Developer", date: "2026-04-20", stage: "Interview", status: "Active" },
-  { id: "C002", name: "Sneha Sharma", role: "Full Stack Developer", date: "2026-04-19", stage: "Screened", status: "Active" },
-  { id: "C004", name: "Neha Gupta", role: "Data Analyst", date: "2026-04-15", stage: "Rejected", status: "Duplicate" },
-  { id: "C005", name: "Vikram Joshi", role: "Senior React Developer", date: "2026-04-18", stage: "Offered", status: "Active" },
-];
 
 function MyCandidates() {
   const { setMobileOpen } = useOutletContext();
+  const { user } = useAuth();
+  const [candidates, setCandidates] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStage, setFilterStage] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const filtered = mockCandidates.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.role.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStage = filterStage === "All" || c.stage === filterStage;
-    return matchSearch && matchStage;
-  });
+  const fetchCandidates = async () => {
+    try {
+      let url = `http://localhost:5001/api/candidates?page=${currentPage}&limit=10&vendor_id=${user?.id}`;
+      if (filterStage !== "All") url += `&status=${filterStage}`;
+      if (searchQuery) url += `&search=${searchQuery}`;
+      
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setCandidates(data.candidates);
+        setTotalPages(data.pagination.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("Error fetching candidates:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) fetchCandidates();
+  }, [user?.id, currentPage, filterStage, searchQuery]);
 
   const getStageBadge = (stage) => {
     const m = { Submitted: "badge-neutral", Screened: "badge-info", Interview: "badge-warning", Offered: "badge-success", Rejected: "badge-danger", Hired: "badge-success" };
@@ -34,18 +46,18 @@ function MyCandidates() {
     <tr key={candidate.id}>
       <td>
         <div className="table-user">
-          <div className="table-user-avatar">{candidate.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+          <div className="table-user-avatar">{candidate.full_name?.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
           <div className="table-user-info">
-            <h4>{candidate.name}</h4>
-            <p>{candidate.id}</p>
+            <h4>{candidate.full_name}</h4>
+            <p>ID: {candidate.id}</p>
           </div>
         </div>
       </td>
-      <td>{candidate.role}</td>
-      <td>{new Date(candidate.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
-      <td>{getStageBadge(candidate.stage)}</td>
+      <td>{candidate.job_title}</td>
+      <td>{candidate.created_at ? new Date(candidate.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
+      <td>{getStageBadge(candidate.status)}</td>
       <td>
-        {candidate.status === "Duplicate" ? (
+        {candidate.is_duplicate ? (
           <span className="badge badge-danger">Duplicate</span>
         ) : (
           <span className="badge badge-success">Active</span>
@@ -65,7 +77,7 @@ function MyCandidates() {
       <div className="dashboard-page">
         <div className="page-header">
           <div className="page-header-left">
-            <h2>Submitted Candidates ({filtered.length})</h2>
+            <h2>Submitted Candidates</h2>
             <p>Monitor pipeline stages and statuses for your submissions.</p>
           </div>
         </div>
@@ -86,7 +98,7 @@ function MyCandidates() {
           </select>
         </div>
 
-        <Table columns={columns} data={filtered} renderRow={renderRow} currentPage={currentPage} totalPages={1} onPageChange={setCurrentPage} />
+        <Table columns={columns} data={candidates} renderRow={renderRow} currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </>
   );

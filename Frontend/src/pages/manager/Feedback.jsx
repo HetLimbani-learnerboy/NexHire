@@ -4,16 +4,27 @@ import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
 import "@/styles/forms.css";
 
-const initialInterviews = [
-  { id: "I001", candidate: "Neha Gupta", role: "Data Analyst", date: "2026-04-25", mode: "Video Call", status: "Completed", feedbackStatus: "Pending" },
-  { id: "I002", candidate: "Sneha Sharma", role: "Full Stack Developer", date: "2026-04-24", mode: "In-Person", status: "Completed", feedbackStatus: "Submitted" },
-];
-
 function Feedback() {
   const { setMobileOpen } = useOutletContext();
-  const [interviews, setInterviews] = useState(initialInterviews);
+  const [interviews, setInterviews] = useState([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
+
+  React.useEffect(() => {
+    fetchInterviews();
+  }, []);
+
+  const fetchInterviews = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/api/interviews");
+      const data = await res.json();
+      if (data.success) {
+        setInterviews(data.interviews);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const [feedbackForm, setFeedbackForm] = useState({
     technicalScore: 3,
@@ -25,11 +36,10 @@ function Feedback() {
 
   const handleOpenFeedback = (interview) => {
     setSelectedInterview(interview);
-    if (interview.feedbackStatus === "Submitted") {
-      // Mock pre-filled data
+    if (interview.feedback_rating) {
       setFeedbackForm({
-        technicalScore: 4, cultureScore: 5, communicationScore: 4,
-        remarks: "Excellent problem-solving skills. Fits well with team culture.", recommendation: "Hire"
+        technicalScore: interview.feedback_rating, cultureScore: interview.feedback_rating, communicationScore: interview.feedback_rating,
+        remarks: interview.feedback_remarks || "", recommendation: interview.feedback_recommendation || "Hire"
       });
     } else {
       setFeedbackForm({ technicalScore: 3, cultureScore: 3, communicationScore: 3, remarks: "", recommendation: "Hire" });
@@ -37,10 +47,27 @@ function Feedback() {
     setShowFeedbackModal(true);
   };
 
-  const handleSubmitFeedback = (e) => {
+  const handleSubmitFeedback = async (e) => {
     e.preventDefault();
-    setInterviews(interviews.map(i => i.id === selectedInterview.id ? { ...i, feedbackStatus: "Submitted" } : i));
-    setShowFeedbackModal(false);
+    const avgRating = Math.round((feedbackForm.technicalScore + feedbackForm.cultureScore + feedbackForm.communicationScore) / 3);
+    try {
+      const res = await fetch(`http://localhost:5001/api/interviews/${selectedInterview.id}/feedback`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: avgRating,
+          remarks: feedbackForm.remarks,
+          recommendation: feedbackForm.recommendation
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchInterviews();
+        setShowFeedbackModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const renderStars = (rating, interactive, key, onChange) => (
@@ -62,32 +89,34 @@ function Feedback() {
     </div>
   );
 
-  const renderRow = (interview) => (
+  const renderRow = (interview) => {
+    const isSubmitted = !!interview.feedback_rating;
+    return (
     <tr key={interview.id}>
       <td>
         <div className="table-user">
-          <div className="table-user-avatar">{interview.candidate.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+          <div className="table-user-avatar">{interview.candidate_name?.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
           <div className="table-user-info">
-            <h4>{interview.candidate}</h4>
+            <h4>{interview.candidate_name}</h4>
             <p>{interview.id}</p>
           </div>
         </div>
       </td>
       <td>{interview.role}</td>
-      <td>{new Date(interview.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</td>
+      <td>{interview.interview_date ? new Date(interview.interview_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "-"}</td>
       <td><span className={`badge ${interview.mode === 'Video Call' ? 'badge-info' : 'badge-neutral'}`}>{interview.mode}</span></td>
       <td>
-        <span className={`badge ${interview.feedbackStatus === "Submitted" ? "badge-success" : "badge-warning"}`}>
-          {interview.feedbackStatus}
+        <span className={`badge ${isSubmitted ? "badge-success" : "badge-warning"}`}>
+          {isSubmitted ? "Submitted" : "Pending"}
         </span>
       </td>
       <td>
         <button className="btn btn-sm btn-outline" onClick={() => handleOpenFeedback(interview)}>
-          {interview.feedbackStatus === "Submitted" ? "View Feedback" : "Submit Feedback"}
+          {isSubmitted ? "View Feedback" : "Submit Feedback"}
         </button>
       </td>
     </tr>
-  );
+  )};
 
   return (
     <>
@@ -95,7 +124,7 @@ function Feedback() {
       <div className="dashboard-page">
         <div className="page-header">
           <div className="page-header-left">
-            <h2>Pending Feedback ({interviews.filter(i => i.feedbackStatus === "Pending").length})</h2>
+            <h2>Pending Feedback ({interviews.filter(i => !i.feedback_rating).length})</h2>
             <p>Please submit feedback for recently completed interviews.</p>
           </div>
         </div>
@@ -106,7 +135,7 @@ function Feedback() {
           <div className="modal-overlay" onClick={() => setShowFeedbackModal(false)}>
             <div className="modal-content slide-up" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
               <div className="modal-header">
-                <h2>{selectedInterview.feedbackStatus === "Submitted" ? "View" : "Submit"} Feedback: {selectedInterview.candidate}</h2>
+                <h2>{selectedInterview.feedback_rating ? "View" : "Submit"} Feedback: {selectedInterview.candidate_name}</h2>
                 <button className="modal-close" onClick={() => setShowFeedbackModal(false)}>✕</button>
               </div>
               <form onSubmit={handleSubmitFeedback}>
@@ -114,15 +143,15 @@ function Feedback() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "10px" }}>
                     <div>
                       <label className="form-label">Technical Skills</label>
-                      {renderStars(feedbackForm.technicalScore, selectedInterview.feedbackStatus === "Pending", "technicalScore", setFeedbackForm)}
+                      {renderStars(feedbackForm.technicalScore, !selectedInterview.feedback_rating, "technicalScore", setFeedbackForm)}
                     </div>
                     <div>
                       <label className="form-label">Communication</label>
-                      {renderStars(feedbackForm.communicationScore, selectedInterview.feedbackStatus === "Pending", "communicationScore", setFeedbackForm)}
+                      {renderStars(feedbackForm.communicationScore, !selectedInterview.feedback_rating, "communicationScore", setFeedbackForm)}
                     </div>
                     <div>
                       <label className="form-label">Culture Fit</label>
-                      {renderStars(feedbackForm.cultureScore, selectedInterview.feedbackStatus === "Pending", "cultureScore", setFeedbackForm)}
+                      {renderStars(feedbackForm.cultureScore, !selectedInterview.feedback_rating, "cultureScore", setFeedbackForm)}
                     </div>
                   </div>
 
@@ -134,7 +163,7 @@ function Feedback() {
                       placeholder="Share detailed feedback, strengths, weaknesses..."
                       value={feedbackForm.remarks}
                       onChange={(e) => setFeedbackForm({ ...feedbackForm, remarks: e.target.value })}
-                      disabled={selectedInterview.feedbackStatus === "Submitted"}
+                      disabled={!!selectedInterview.feedback_rating}
                     />
                   </div>
 
@@ -144,7 +173,7 @@ function Feedback() {
                       className="form-select"
                       value={feedbackForm.recommendation}
                       onChange={(e) => setFeedbackForm({ ...feedbackForm, recommendation: e.target.value })}
-                      disabled={selectedInterview.feedbackStatus === "Submitted"}
+                      disabled={!!selectedInterview.feedback_rating}
                     >
                       <option value="Strong Hire">Strong Hire</option>
                       <option value="Hire">Hire</option>
@@ -155,7 +184,7 @@ function Feedback() {
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-outline" onClick={() => setShowFeedbackModal(false)}>Cancel</button>
-                  {selectedInterview.feedbackStatus === "Pending" && (
+                  {!selectedInterview.feedback_rating && (
                     <button type="submit" className="btn btn-success">Submit Feedback</button>
                   )}
                 </div>
