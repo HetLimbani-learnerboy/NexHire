@@ -17,6 +17,9 @@ const { createCandidateStatusTable } = require("./models/CandidateStatus");
 const jobRoutes = require("./routes/jobRoutes");
 const candidateRoutes = require("./routes/candidateRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
+const vendorRoutes = require("./routes/vendorRoutes");
+const userRoutes = require("./routes/userRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -25,6 +28,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/admin", adminRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ── Database Initialisation ───────────────────────────────────────────────────
 const initDB = async () => {
@@ -33,18 +40,18 @@ const initDB = async () => {
         client = await pool.connect();
         console.log("✅ Connected to Neon database successfully");
 
-        // Auto-create tables on startup (order matters for FK deps)
-        await createJobsTable();
-        console.log("✅ Jobs table ready");
+        // // Auto-create tables on startup (order matters for FK deps)
+        // await createJobsTable();
+        // console.log("✅ Jobs table ready");
 
-        await createCandidatesTable();
-        console.log("✅ Candidates table ready");
+        // await createCandidatesTable();
+        // console.log("✅ Candidates table ready");
 
-        await createCandidateStatusTable();
-        console.log("✅ CandidateStatus table ready");
+        // await createCandidateStatusTable();
+        // console.log("✅ CandidateStatus table ready");
 
-        await createInterviewsTable();
-        console.log("✅ Interviews table ready");
+        // await createInterviewsTable();
+        // console.log("✅ Interviews table ready");
     } catch (err) {
         console.error("❌ Database initialisation error:", err);
     } finally {

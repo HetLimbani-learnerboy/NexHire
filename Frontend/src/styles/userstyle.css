@@ -1,0 +1,503 @@
+/* =========================================================
+   userstyle.css
+   NexHire ATS - Premium Users Page Styles
+   Responsive + Animated + Enterprise UI
+   ========================================================= */
+
+/* ------------------------------ */
+/* Root Layout */
+/* ------------------------------ */
+
+.dashboard-page{
+  min-height:100vh;
+  padding:28px;
+  background:
+    radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 30%),
+    radial-gradient(circle at left bottom, rgba(16,185,129,.06), transparent 25%),
+    linear-gradient(180deg,#f8fbff 0%, #eef4fa 100%);
+  animation:fadePage .6s ease;
+}
+
+@keyframes fadePage{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ------------------------------ */
+/* Header */
+/* ------------------------------ */
+
+.page-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:24px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#0f172a,#1d4ed8);
+  color:#fff;
+  box-shadow:0 18px 40px rgba(15,23,42,.18);
+  margin-bottom:22px;
+  flex-wrap:wrap;
+}
+
+.page-header-left h2{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
+}
+
+.page-header-left p{
+  margin:8px 0 0;
+  color:rgba(255,255,255,.8);
+  font-size:14px;
+}
+
+.page-header-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+/* ------------------------------ */
+/* Buttons */
+/* ------------------------------ */
+
+.btn{
+  border:none;
+  outline:none;
+  cursor:pointer;
+  border-radius:16px;
+  padding:13px 18px;
+  font-size:14px;
+  font-weight:800;
+  transition:all .25s ease;
+}
+
+.btn-primary{
+  color:#fff;
+  background:linear-gradient(135deg,#10b981,#14b8a6);
+  box-shadow:0 12px 24px rgba(16,185,129,.25);
+}
+
+.btn-primary:hover{
+  transform:translateY(-2px);
+}
+
+.btn-outline{
+  background:#fff;
+  color:#0f172a;
+}
+
+.btn-outline:hover{
+  background:#f1f5f9;
+}
+
+.btn-success{
+  color:#fff;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+}
+
+.btn-success:hover{
+  transform:translateY(-2px);
+}
+
+/* ------------------------------ */
+/* Filter Bar */
+/* ------------------------------ */
+
+.filter-bar{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.search-bar,
+.filter-select{
+  min-height:54px;
+  border-radius:18px;
+  border:1px solid #e2e8f0;
+  background:#fff;
+  box-shadow:0 10px 20px rgba(15,23,42,.05);
+}
+
+.search-bar{
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:10px;
+}
+
+.search-bar input{
+  width:100%;
+  border:none;
+  outline:none;
+  font-size:14px;
+  background:transparent;
+}
+
+.filter-select{
+  padding:0 16px;
+  font-size:14px;
+  outline:none;
+}
+
+.search-bar:focus-within,
+.filter-select:focus{
+  border-color:#60a5fa;
+  box-shadow:0 0 0 4px rgba(96,165,250,.16);
+}
+
+/* ------------------------------ */
+/* Table */
+/* ------------------------------ */
+
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 14px;
+}
+
+thead th{
+  text-align:left;
+  font-size:13px;
+  color:#64748b;
+  padding:0 16px 10px;
+}
+
+tbody tr{
+  background:#fff;
+  box-shadow:0 10px 24px rgba(15,23,42,.06);
+  transition:all .25s ease;
+}
+
+tbody tr:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 36px rgba(15,23,42,.10);
+}
+
+tbody td{
+  padding:16px;
+  border-top:1px solid #f1f5f9;
+  border-bottom:1px solid #f1f5f9;
+}
+
+tbody td:first-child{
+  border-left:1px solid #f1f5f9;
+  border-radius:18px 0 0 18px;
+}
+
+tbody td:last-child{
+  border-right:1px solid #f1f5f9;
+  border-radius:0 18px 18px 0;
+}
+
+/* ------------------------------ */
+/* User Cell */
+/* ------------------------------ */
+
+.table-user{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.table-user-avatar{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  color:#fff;
+  background:linear-gradient(135deg,#2563eb,#10b981);
+}
+
+.table-user-info h4{
+  margin:0;
+  font-size:14px;
+  color:#0f172a;
+}
+
+.table-user-info p{
+  margin:4px 0 0;
+  font-size:12px;
+  color:#64748b;
+}
+
+/* ------------------------------ */
+/* Badges */
+/* ------------------------------ */
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.badge-danger{
+  background:#fef2f2;
+  color:#dc2626;
+}
+
+.badge-info{
+  background:#eff6ff;
+  color:#2563eb;
+}
+
+.badge-warning{
+  background:#fff7ed;
+  color:#ea580c;
+}
+
+.badge-success{
+  background:#ecfdf5;
+  color:#059669;
+}
+
+.badge-neutral{
+  background:#f1f5f9;
+  color:#475569;
+}
+
+/* ------------------------------ */
+/* Actions */
+/* ------------------------------ */
+
+.table-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.table-action-btn{
+  width:40px;
+  height:40px;
+  border:none;
+  cursor:pointer;
+  border-radius:14px;
+  background:#f8fafc;
+  transition:all .22s ease;
+}
+
+.table-action-btn:hover{
+  transform:translateY(-2px);
+  background:#e2e8f0;
+}
+
+/* ------------------------------ */
+/* Modal */
+/* ------------------------------ */
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:999;
+  animation:fadeModal .25s ease;
+}
+
+@keyframes fadeModal{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.modal-content{
+  width:100%;
+  max-width:620px;
+  background:#fff;
+  border-radius:26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.20);
+  overflow:hidden;
+  animation:popModal .25s ease;
+}
+
+@keyframes popModal{
+  from{opacity:0;transform:translateY(20px) scale(.95);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.modal-header{
+  padding:22px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #f1f5f9;
+}
+
+.modal-header h2{
+  margin:0;
+  font-size:22px;
+}
+
+.modal-header button{
+  width:40px;
+  height:40px;
+  border:none;
+  cursor:pointer;
+  border-radius:12px;
+  background:#f8fafc;
+}
+
+.modal-body{
+  padding:24px;
+  display:grid;
+  gap:16px;
+}
+
+.modal-footer{
+  padding:20px 24px;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  border-top:1px solid #f1f5f9;
+}
+
+/* ------------------------------ */
+/* Forms */
+/* ------------------------------ */
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.form-label{
+  font-size:13px;
+  font-weight:700;
+  color:#334155;
+}
+
+.form-input,
+.form-select{
+  min-height:50px;
+  border-radius:16px;
+  border:1px solid #e2e8f0;
+  padding:0 14px;
+  font-size:14px;
+  outline:none;
+}
+
+.form-input:focus,
+.form-select:focus{
+  border-color:#60a5fa;
+  box-shadow:0 0 0 4px rgba(96,165,250,.14);
+}
+
+/* ------------------------------ */
+/* Toast */
+/* ------------------------------ */
+
+.toast{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  padding:14px 18px;
+  background:#0f172a;
+  color:#fff;
+  border-radius:18px;
+  font-size:14px;
+  font-weight:700;
+  z-index:1200;
+  animation:slideToast .3s ease;
+}
+
+@keyframes slideToast{
+  from{opacity:0;transform:translateY(18px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ------------------------------ */
+/* Responsive */
+/* ------------------------------ */
+
+@media (max-width:992px){
+  .filter-bar{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:768px){
+  .dashboard-page{
+    padding:16px;
+  }
+
+  .page-header{
+    padding:20px;
+  }
+
+  .page-header-left h2{
+    font-size:24px;
+  }
+
+  .modal-content{
+    max-width:100%;
+  }
+
+  .modal-footer{
+    flex-direction:column;
+  }
+
+  .modal-footer .btn{
+    width:100%;
+  }
+}
+
+@media (max-width:540px){
+  .page-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .page-header-actions{
+    width:100%;
+  }
+
+  .page-header-actions .btn{
+    width:100%;
+  }
+
+  .table-user{
+    gap:8px;
+  }
+
+  .table-user-avatar{
+    width:38px;
+    height:38px;
+    font-size:12px;
+  }
+
+  .toast{
+    left:14px;
+    right:14px;
+  }
+}
+
+/* decorative extras */
+
+tbody tr:nth-child(odd){
+  animation:rowRise .45s ease;
+}
+
+tbody tr:nth-child(even){
+  animation:rowRise .60s ease;
+}
+
+@keyframes rowRise{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* end */
