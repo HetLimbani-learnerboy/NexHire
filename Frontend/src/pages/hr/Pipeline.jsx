@@ -1,52 +1,107 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
+import {
+  FiPlus,
+  FiRefreshCw,
+  FiSearch,
+  FiX,
+  FiUser,
+  FiPhone,
+  FiMail,
+  FiBriefcase,
+  FiLayers,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiClock
+} from "react-icons/fi";
+
 import Navbar from "@/components/Navbar";
 import Loader from "@/components/Loader";
 import "@/styles/pipeline.css";
 import "@/styles/forms.css";
 
 const API_BASE = "http://localhost:5001/api/candidates";
-const stages = ["Submitted", "Screened", "Interview", "Offered", "Hired", "Rejected"];
+
+const stages = [
+  "Submitted",
+  "Screened",
+  "Interview",
+  "Offered",
+  "Hired",
+  "Rejected"
+];
 
 function Pipeline() {
   const { setMobileOpen } = useOutletContext();
+
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [draggedId, setDraggedId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
 
+  const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [search, setSearch] = useState("");
+
   const [formData, setFormData] = useState({
-    full_name: "", email: "", phone: "", job_title: "", vendor_name: "", notes: "",
+    full_name: "",
+    email: "",
+    phone: "",
+    job_title: "",
+    vendor_name: "",
+    notes: ""
   });
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 2600);
   };
 
-  // ── Fetch all candidates ────────────────────────────────────────────────────
+  /* =====================================================
+     FETCH DATA
+  ===================================================== */
   const fetchCandidates = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`${API_BASE}?limit=200`);
-      if (!res.ok) throw new Error("Failed to fetch");
+      setLoading(true);
+      setError("");
+
+      const res = await fetch(`${API_BASE}?limit=300`);
       const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed");
+
       setCandidates(data.candidates || []);
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Unable to connect to the server. Make sure the backend is running on port 5001.");
+      setError(err.message || "Unable to fetch pipeline data");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchCandidates(); }, [fetchCandidates]);
+  useEffect(() => {
+    fetchCandidates();
+  }, [fetchCandidates]);
 
-  // ── Drag & Drop ─────────────────────────────────────────────────────────────
+  /* =====================================================
+     SEARCH FILTER
+  ===================================================== */
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((c) => {
+      const q = search.toLowerCase();
+
+      return (
+        (c.full_name || "").toLowerCase().includes(q) ||
+        (c.job_title || "").toLowerCase().includes(q) ||
+        (c.vendor_name || "").toLowerCase().includes(q)
+      );
+    });
+  }, [candidates, search]);
+
+  /* =====================================================
+     DRAG DROP
+  ===================================================== */
   const handleDragStart = (e, id) => {
     setDraggedId(id);
     e.dataTransfer.effectAllowed = "move";
@@ -54,138 +109,304 @@ function Pipeline() {
 
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
   };
 
-  const handleDrop = async (e, targetStage) => {
+  const handleDrop = async (e, stage) => {
     e.preventDefault();
+
     if (!draggedId) return;
 
-    // Optimistic UI update
-    setCandidates(prev => prev.map(c => c.id === draggedId ? { ...c, status: targetStage } : c));
-    setDraggedId(null);
+    const old = [...candidates];
+
+    setCandidates((prev) =>
+      prev.map((item) =>
+        item.id === draggedId
+          ? { ...item, status: stage }
+          : item
+      )
+    );
 
     try {
-      const res = await fetch(`${API_BASE}/${draggedId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: targetStage }),
-      });
+      const res = await fetch(
+        `${API_BASE}/${draggedId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ status: stage })
+        }
+      );
+
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message);
-      showToast(`Moved to ${targetStage}`);
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message);
+      }
+
+      showToast(`Moved to ${stage}`);
     } catch (err) {
-      showToast(err.message || "Failed to update stage", "error");
-      fetchCandidates(); // Revert on failure
+      setCandidates(old);
+      showToast(err.message, "error");
     }
+
+    setDraggedId(null);
   };
 
-  // ── Create candidate ───────────────────────────────────────────────────────
-  const handleInputChange = (e) => {
+  /* =====================================================
+     FORM
+  ===================================================== */
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearForm = () => {
+    setFormData({
+      full_name: "",
+      email: "",
+      phone: "",
+      job_title: "",
+      vendor_name: "",
+      notes: ""
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.full_name.trim()) return;
 
     setSubmitting(true);
+
     try {
       const res = await fetch(API_BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
       });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message);
 
-      showToast("Candidate submitted!");
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message);
+      }
+
+      showToast("Candidate Added");
       setShowModal(false);
-      setFormData({ full_name: "", email: "", phone: "", job_title: "", vendor_name: "", notes: "" });
+      clearForm();
       fetchCandidates();
     } catch (err) {
-      showToast(err.message || "Failed to submit candidate", "error");
+      showToast(err.message, "error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  /* =====================================================
+     COUNTS
+  ===================================================== */
+  const stageCount = (stage) =>
+    filteredCandidates.filter(
+      (c) => c.status === stage
+    ).length;
+
+  const totalHired = stageCount("Hired");
+  const totalPending =
+    stageCount("Submitted") +
+    stageCount("Screened") +
+    stageCount("Interview") +
+    stageCount("Offered");
+
+  const totalRejected = stageCount("Rejected");
+
+  /* =====================================================
+     UI
+  ===================================================== */
   return (
     <>
-      <Navbar title="Candidate Pipeline" subtitle="Drag and drop candidates to move them through stages" onHamburgerClick={() => setMobileOpen(true)} />
-      <div className="dashboard-page" style={{ display: "flex", flexDirection: "column" }}>
+      <Navbar
+        title="Candidate Pipeline"
+        subtitle="Advanced Hiring Workflow Board"
+        onHamburgerClick={() => setMobileOpen(true)}
+      />
 
-        {/* Header with add button */}
-        <div className="page-header" style={{ marginBottom: "16px" }}>
+      <div className="dashboard-page">
+
+        {/* TOP HERO */}
+        <div className="page-header">
           <div className="page-header-left">
-            <h2>Pipeline ({candidates.length} candidates)</h2>
-            <p>Click + to add, drag cards to change stage</p>
+            <h2>
+              Pipeline Board
+            </h2>
+            <p>
+              Manage candidate journey using drag & drop
+            </p>
           </div>
+
           <div className="page-header-actions">
-            <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Submit Candidate</button>
+            <button
+              className="btn btn-outline"
+              onClick={fetchCandidates}
+            >
+              <FiRefreshCw />
+              Refresh
+            </button>
+
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              <FiPlus />
+              Submit Candidate
+            </button>
           </div>
         </div>
 
-        {/* Error state */}
+        {/* STATS */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <FiLayers />
+            <h3>{filteredCandidates.length}</h3>
+            <p>Total</p>
+          </div>
+
+          <div className="stat-card green">
+            <FiCheckCircle />
+            <h3>{totalHired}</h3>
+            <p>Hired</p>
+          </div>
+
+          <div className="stat-card orange">
+            <FiClock />
+            <h3>{totalPending}</h3>
+            <p>In Progress</p>
+          </div>
+
+          <div className="stat-card red">
+            <FiAlertCircle />
+            <h3>{totalRejected}</h3>
+            <p>Rejected</p>
+          </div>
+        </div>
+
+        {/* SEARCH */}
+        <div className="filter-bar">
+          <div className="search-bar">
+            <FiSearch />
+            <input
+              type="text"
+              placeholder="Search candidate / job / vendor..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+            />
+          </div>
+        </div>
+
+        {/* ERROR */}
         {error && (
-          <div style={{
-            background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: "8px",
-            padding: "16px 20px", marginBottom: "16px", display: "flex", alignItems: "center",
-            gap: "12px", color: "#dc2626", fontSize: "14px", fontWeight: 500,
-          }}>
-            <span>⚠️</span>
-            <span>{error}</span>
-            <button onClick={fetchCandidates} style={{
-              marginLeft: "auto", background: "#dc2626", color: "white", border: "none",
-              borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontWeight: 600, fontSize: "13px",
-            }}>Retry</button>
+          <div className="error-box">
+            {error}
           </div>
         )}
 
-        {/* Pipeline board */}
+        {/* BOARD */}
         {loading ? (
           <Loader />
         ) : (
           <div className="pipeline-board">
-            {stages.map(stage => {
-              const stageCandidates = candidates.filter(c => c.status === stage);
+            {stages.map((stage) => {
+              const stageItems =
+                filteredCandidates.filter(
+                  (item) =>
+                    item.status === stage
+                );
+
               return (
                 <div
                   key={stage}
                   className="pipeline-column"
                   onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, stage)}
+                  onDrop={(e) =>
+                    handleDrop(e, stage)
+                  }
                 >
                   <div className="pipeline-column-header">
                     <h3>{stage}</h3>
-                    <span className="badge badge-neutral">{stageCandidates.length}</span>
+                    <span className="badge badge-neutral">
+                      {stageItems.length}
+                    </span>
                   </div>
+
                   <div className="pipeline-column-body">
-                    {stageCandidates.map(c => (
+
+                    {stageItems.map((c) => (
                       <div
                         key={c.id}
-                        className={`pipeline-card ${draggedId === c.id ? "dragging" : ""}`}
+                        className={`pipeline-card ${
+                          draggedId === c.id
+                            ? "dragging"
+                            : ""
+                        }`}
                         draggable
-                        onDragStart={(e) => handleDragStart(e, c.id)}
+                        onDragStart={(e) =>
+                          handleDragStart(
+                            e,
+                            c.id
+                          )
+                        }
                       >
                         <div className="pipeline-card-header">
-                          <h4>{c.full_name}</h4>
+                          <h4>
+                            {c.full_name}
+                          </h4>
+
                           <span>
-                            {c.submitted_at
-                              ? new Date(c.submitted_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
-                              : new Date(c.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                            {new Date(
+                              c.created_at
+                            ).toLocaleDateString()}
                           </span>
                         </div>
-                        <p>{c.job_title || "No role assigned"}</p>
-                        {c.vendor_name && (
-                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>via {c.vendor_name}</span>
+
+                        <p>
+                          <FiBriefcase />
+                          {c.job_title ||
+                            "No Role"}
+                        </p>
+
+                        <small>
+                          <FiLayers />
+                          {c.vendor_name ||
+                            "Direct Source"}
+                        </small>
+
+                        {c.email && (
+                          <small>
+                            <FiMail />
+                            {c.email}
+                          </small>
+                        )}
+
+                        {c.phone && (
+                          <small>
+                            <FiPhone />
+                            {c.phone}
+                          </small>
                         )}
                       </div>
                     ))}
-                    {stageCandidates.length === 0 && (
-                      <div className="pipeline-drop-zone">Drop candidate here</div>
+
+                    {stageItems.length ===
+                      0 && (
+                      <div className="pipeline-drop-zone">
+                        Drop Here
+                      </div>
                     )}
                   </div>
                 </div>
@@ -194,49 +415,165 @@ function Pipeline() {
           </div>
         )}
 
-        {/* Submit Candidate Modal */}
+        {/* MODAL */}
         {showModal && (
-          <div className="modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="modal-content slide-up" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-overlay"
+            onClick={() =>
+              setShowModal(false)
+            }
+          >
+            <div
+              className="modal-content slide-up"
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
               <div className="modal-header">
-                <h2>Submit New Candidate</h2>
-                <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+                <h2>
+                  New Candidate
+                </h2>
+
+                <button
+                  className="modal-close"
+                  onClick={() =>
+                    setShowModal(false)
+                  }
+                >
+                  <FiX />
+                </button>
               </div>
-              <form onSubmit={handleSubmit}>
+
+              <form
+                onSubmit={handleSubmit}
+              >
                 <div className="modal-body">
+
                   <div className="form-group">
-                    <label className="form-label">Full Name *</label>
-                    <input className="form-input" type="text" name="full_name" placeholder="Enter candidate name" required value={formData.full_name} onChange={handleInputChange} />
+                    <label className="form-label">
+                      Full Name *
+                    </label>
+                    <input
+                      className="form-input"
+                      name="full_name"
+                      required
+                      value={
+                        formData.full_name
+                      }
+                      onChange={
+                        handleChange
+                      }
+                    />
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+
+                  <div className="grid-2">
                     <div className="form-group">
-                      <label className="form-label">Email</label>
-                      <input className="form-input" type="email" name="email" placeholder="Email address" value={formData.email} onChange={handleInputChange} />
+                      <label className="form-label">
+                        Email
+                      </label>
+                      <input
+                        className="form-input"
+                        name="email"
+                        value={
+                          formData.email
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Phone</label>
-                      <input className="form-input" type="tel" name="phone" placeholder="Phone number" value={formData.phone} onChange={handleInputChange} />
+                      <label className="form-label">
+                        Phone
+                      </label>
+                      <input
+                        className="form-input"
+                        name="phone"
+                        value={
+                          formData.phone
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      />
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+
+                  <div className="grid-2">
                     <div className="form-group">
-                      <label className="form-label">Job / Role</label>
-                      <input className="form-input" type="text" name="job_title" placeholder="e.g. Senior React Developer" value={formData.job_title} onChange={handleInputChange} />
+                      <label className="form-label">
+                        Job Title
+                      </label>
+                      <input
+                        className="form-input"
+                        name="job_title"
+                        value={
+                          formData.job_title
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Vendor</label>
-                      <input className="form-input" type="text" name="vendor_name" placeholder="e.g. TechStaff Solutions" value={formData.vendor_name} onChange={handleInputChange} />
+                      <label className="form-label">
+                        Vendor
+                      </label>
+                      <input
+                        className="form-input"
+                        name="vendor_name"
+                        value={
+                          formData.vendor_name
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      />
                     </div>
                   </div>
+
                   <div className="form-group">
-                    <label className="form-label">Notes</label>
-                    <textarea className="form-textarea" name="notes" placeholder="Any additional notes..." rows={2} value={formData.notes} onChange={handleInputChange} />
+                    <label className="form-label">
+                      Notes
+                    </label>
+                    <textarea
+                      className="form-textarea"
+                      rows="3"
+                      name="notes"
+                      value={
+                        formData.notes
+                      }
+                      onChange={
+                        handleChange
+                      }
+                    />
                   </div>
+
                 </div>
+
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-success" disabled={submitting}>
-                    {submitting ? "Submitting..." : "Submit Candidate"}
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() =>
+                      setShowModal(false)
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn btn-success"
+                    disabled={
+                      submitting
+                    }
+                  >
+                    {submitting
+                      ? "Saving..."
+                      : "Create Candidate"}
                   </button>
                 </div>
               </form>
@@ -244,17 +581,15 @@ function Pipeline() {
           </div>
         )}
 
-        {/* Toast */}
+        {/* TOAST */}
         {toast && (
-          <div style={{
-            position: "fixed", bottom: "24px", right: "24px",
-            background: toast.type === "success" ? "linear-gradient(135deg, #059669, #10b981)" : "linear-gradient(135deg, #dc2626, #ef4444)",
-            color: "white", padding: "14px 24px", borderRadius: "12px", fontWeight: 600, fontSize: "14px",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.18)", zIndex: 9999, display: "flex", alignItems: "center", gap: "10px",
-          }}>
-            {toast.type === "success" ? "✅" : "❌"} {toast.message}
+          <div
+            className={`toast ${toast.type}`}
+          >
+            {toast.message}
           </div>
         )}
+
       </div>
     </>
   );

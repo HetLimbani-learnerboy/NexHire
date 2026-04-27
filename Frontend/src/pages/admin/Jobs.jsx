@@ -3,7 +3,25 @@ import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
 import Loader from "@/components/Loader";
-import "@/styles/forms.css";
+import "../../styles/forms.css";
+
+import {
+  FiPlus,
+  FiSearch,
+  FiEye,
+  FiEdit3,
+  FiTrash2,
+  FiCheckCircle,
+  FiXCircle,
+  FiX,
+  FiBriefcase,
+  FiMapPin,
+  FiCalendar,
+  FiUsers,
+  FiDollarSign,
+  FiFilter,
+  FiRefreshCw
+} from "react-icons/fi";
 
 const API_BASE = "http://localhost:5001/api/jobs";
 
@@ -24,84 +42,90 @@ const EMPTY_FORM = {
 function Jobs() {
   const { setMobileOpen } = useOutletContext();
 
-  // ── Data state ──────────────────────────────────────────────────────────────
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalCount: 0 });
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState(null);
 
-  // ── Filter state ────────────────────────────────────────────────────────────
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+  });
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ── Modal state ─────────────────────────────────────────────────────────────
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState("create"); // "create" | "edit" | "view"
-  const [formData, setFormData] = useState({ ...EMPTY_FORM });
+  const [modalMode, setModalMode] = useState("create");
   const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
+  const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState(null);
 
-  // ── Toast notification ──────────────────────────────────────────────────────
-  const [toast, setToast] = useState(null);
-
-  const showToast = (message, type = "success") => {
+  const toastMsg = (message, type = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 2600);
   };
 
-  // ── Fetch jobs from API ─────────────────────────────────────────────────────
   const fetchJobs = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setError("");
+
     try {
       const params = new URLSearchParams();
+
+      if (searchQuery) params.append("search", searchQuery);
       if (filterStatus !== "All") params.append("status", filterStatus);
       if (filterPriority !== "All") params.append("priority", filterPriority);
-      if (searchQuery) params.append("search", searchQuery);
+
       params.append("page", currentPage);
       params.append("limit", 10);
 
       const res = await fetch(`${API_BASE}?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch jobs");
       const data = await res.json();
 
+      if (!res.ok) throw new Error(data.message || "Unable to fetch jobs");
+
       setJobs(data.jobs || []);
-      setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalCount: 0 });
+      setPagination(
+        data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalCount: 0,
+        }
+      );
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Unable to connect to the server. Make sure the backend is running on port 5001.");
+      setError(err.message || "Server connection failed");
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, filterPriority, searchQuery, currentPage]);
+  }, [searchQuery, filterStatus, filterPriority, currentPage]);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, filterPriority, searchQuery]);
+  }, [searchQuery, filterStatus, filterPriority]);
 
-  // ── Form helpers ────────────────────────────────────────────────────────────
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const closeModal = () => {
+    setShowModal(false);
+    setSubmitting(false);
+    setFormError("");
+    setEditingId(null);
   };
 
-  const openCreateModal = () => {
+  const openCreate = () => {
     setModalMode("create");
     setFormData({ ...EMPTY_FORM });
-    setEditingId(null);
-    setFormError(null);
     setShowModal(true);
   };
 
-  const openEditModal = (job) => {
+  const openEdit = (job) => {
     setModalMode("edit");
     setEditingId(job.id);
     setFormData({
@@ -117,11 +141,10 @@ function Jobs() {
       openings: job.openings || 1,
       description: job.description || "",
     });
-    setFormError(null);
     setShowModal(true);
   };
 
-  const openViewModal = (job) => {
+  const openView = (job) => {
     setModalMode("view");
     setEditingId(job.id);
     setFormData({
@@ -140,24 +163,24 @@ function Jobs() {
     setShowModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setFormError(null);
-    setSubmitting(false);
+  const onInput = (e) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  // ── Create / Update job ─────────────────────────────────────────────────────
-  const handleSubmit = async () => {
+  const submitForm = async () => {
     if (!formData.title.trim()) {
-      setFormError("Job title is required");
+      setFormError("Job title required");
       return;
     }
 
     setSubmitting(true);
-    setFormError(null);
+    setFormError("");
 
     try {
-      const url = modalMode === "edit" ? `${API_BASE}/${editingId}` : API_BASE;
+      const url =
+        modalMode === "edit" ? `${API_BASE}/${editingId}` : API_BASE;
+
       const method = modalMode === "edit" ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -165,7 +188,7 @@ function Jobs() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          openings: parseInt(formData.openings, 10) || 1,
+          openings: parseInt(formData.openings) || 1,
         }),
       });
 
@@ -175,194 +198,271 @@ function Jobs() {
         throw new Error(data.message || "Operation failed");
       }
 
-      showToast(
-        modalMode === "edit" ? "Job updated successfully!" : "Job created successfully!",
-        "success"
+      toastMsg(
+        modalMode === "edit"
+          ? "Job updated successfully"
+          : "Job created successfully"
       );
+
       closeModal();
       fetchJobs();
     } catch (err) {
-      console.error("Submit error:", err);
-      setFormError(err.message || "Something went wrong. Please try again.");
+      setFormError(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ── Delete job ──────────────────────────────────────────────────────────────
-  const handleDelete = async (id, title) => {
-    if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return;
+  const removeJob = async (id, title) => {
+    const ok = window.confirm(`Delete "${title}" ?`);
+    if (!ok) return;
 
     try {
-      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: "DELETE",
+      });
+
       const data = await res.json();
 
-      if (!res.ok || !data.success) throw new Error(data.message);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message);
+      }
 
-      showToast("Job deleted successfully!", "success");
+      toastMsg("Job deleted");
       fetchJobs();
     } catch (err) {
-      showToast(err.message || "Failed to delete job", "error");
+      toastMsg(err.message, "error");
     }
   };
 
-  // ── Quick status change ─────────────────────────────────────────────────────
-  const handleStatusChange = async (id, newStatus) => {
+  const quickStatus = async (id, status) => {
     try {
       const res = await fetch(`${API_BASE}/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status }),
       });
+
       const data = await res.json();
 
-      if (!res.ok || !data.success) throw new Error(data.message);
+      if (!res.ok || !data.success) {
+        throw new Error(data.message);
+      }
 
-      showToast(`Job status changed to ${newStatus}`, "success");
+      toastMsg(`Status changed to ${status}`);
       fetchJobs();
     } catch (err) {
-      showToast(err.message || "Failed to update status", "error");
+      toastMsg(err.message, "error");
     }
   };
 
-  // ── Badges ──────────────────────────────────────────────────────────────────
-  const getStatusBadge = (s) => {
-    const m = { Open: "badge-success", Closed: "badge-danger", "On Hold": "badge-neutral", "Pending Approval": "badge-warning" };
-    return <span className={`badge ${m[s] || "badge-neutral"}`}>{s}</span>;
+  const statusBadge = (status) => {
+    const map = {
+      Open: "badge green",
+      Closed: "badge red",
+      "Pending Approval": "badge yellow",
+      "On Hold": "badge gray",
+    };
+
+    return <span className={map[status] || "badge gray"}>{status}</span>;
   };
 
-  const getPriorityBadge = (p) => {
-    const m = { High: "badge-danger", Medium: "badge-warning", Low: "badge-neutral" };
-    return <span className={`badge ${m[p] || "badge-neutral"}`}>{p}</span>;
+  const priorityBadge = (p) => {
+    const map = {
+      High: "badge red",
+      Medium: "badge yellow",
+      Low: "badge gray",
+    };
+
+    return <span className={map[p] || "badge gray"}>{p}</span>;
   };
 
-  // ── Parse skills from DB string to array for display ────────────────────────
   const parseSkills = (skills) => {
     if (!skills) return [];
-    if (Array.isArray(skills)) return skills;
-    return skills.split(",").map((s) => s.trim()).filter(Boolean);
+    return skills.split(",").map((x) => x.trim());
   };
 
-  // ── Table ───────────────────────────────────────────────────────────────────
-  const columns = ["Job Title", "Skills", "Budget", "Deadline", "Priority", "Status", "Actions"];
+  const columns = [
+    "Title",
+    "Skills",
+    "Budget",
+    "Deadline",
+    "Priority",
+    "Status",
+    "Actions",
+  ];
 
   const renderRow = (job) => (
     <tr key={job.id}>
       <td>
-        <div className="table-user-info">
-          <h4>{job.title}</h4>
-          <p>{job.department || "—"}</p>
+        <div className="job-main">
+          <div className="job-avatar">
+            <FiBriefcase />
+          </div>
+          <div>
+            <h4>{job.title}</h4>
+            <p>{job.department || "Department"}</p>
+          </div>
         </div>
       </td>
+
       <td>
-        <div className="skills-tags">
-          {parseSkills(job.skills).slice(0, 3).map((s) => (
-            <span className="skill-tag" key={s}>{s}</span>
-          ))}
+        <div className="skills-wrap">
+          {parseSkills(job.skills)
+            .slice(0, 3)
+            .map((s) => (
+              <span className="skill-pill" key={s}>
+                {s}
+              </span>
+            ))}
         </div>
       </td>
-      <td style={{ fontWeight: 600 }}>{job.budget || "—"}</td>
+
+      <td>₹ {job.budget || "--"}</td>
+
       <td>
         {job.deadline
-          ? new Date(job.deadline).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-          : "—"}
+          ? new Date(job.deadline).toLocaleDateString()
+          : "--"}
       </td>
-      <td>{getPriorityBadge(job.priority)}</td>
-      <td>{getStatusBadge(job.status)}</td>
+
+      <td>{priorityBadge(job.priority)}</td>
+      <td>{statusBadge(job.status)}</td>
+
       <td>
-        <div className="table-actions">
+        <div className="action-group">
           {job.status === "Pending Approval" && (
             <>
               <button
-                className="table-action-btn"
-                title="Approve"
-                style={{ color: "var(--success)" }}
-                onClick={() => handleStatusChange(job.id, "Open")}
-              >✅</button>
+                className="icon-btn approve"
+                onClick={() => quickStatus(job.id, "Open")}
+              >
+                <FiCheckCircle />
+              </button>
+
               <button
-                className="table-action-btn"
-                title="Reject"
-                style={{ color: "var(--danger)" }}
-                onClick={() => handleStatusChange(job.id, "Closed")}
-              >❌</button>
+                className="icon-btn reject"
+                onClick={() => quickStatus(job.id, "Closed")}
+              >
+                <FiXCircle />
+              </button>
             </>
           )}
-          <button className="table-action-btn" title="View" onClick={() => openViewModal(job)}>👁</button>
-          <button className="table-action-btn" title="Edit" onClick={() => openEditModal(job)}>✏️</button>
+
+          <button className="icon-btn view" onClick={() => openView(job)}>
+            <FiEye />
+          </button>
+
+          <button className="icon-btn edit" onClick={() => openEdit(job)}>
+            <FiEdit3 />
+          </button>
+
           <button
-            className="table-action-btn"
-            title="Delete"
-            style={{ color: "var(--danger)" }}
-            onClick={() => handleDelete(job.id, job.title)}
-          >🗑️</button>
+            className="icon-btn delete"
+            onClick={() => removeJob(job.id, job.title)}
+          >
+            <FiTrash2 />
+          </button>
         </div>
       </td>
     </tr>
   );
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      <Navbar title="Jobs" subtitle="Manage job requisitions and vendor assignments" onHamburgerClick={() => setMobileOpen(true)} />
-      <div className="dashboard-page">
-        <div className="page-header">
-          <div className="page-header-left">
-            <h2>Job Requisitions ({pagination.totalCount})</h2>
-            <p>Create, assign, and track open positions</p>
+      <Navbar
+        title="Jobs"
+        subtitle="Manage requisitions and hiring needs"
+        onHamburgerClick={() => setMobileOpen(true)}
+      />
+
+      <div className="jobs-page">
+        <div className="hero-top">
+          <div>
+            <h2>Job Requisitions</h2>
+            <p>Total Jobs : {pagination.totalCount}</p>
           </div>
-          <div className="page-header-actions">
-            <button className="btn btn-primary" onClick={openCreateModal} id="add-job-btn">+ Create Job</button>
+
+          <button className="create-btn" onClick={openCreate}>
+            <FiPlus />
+            Create Job
+          </button>
+        </div>
+
+        <div className="mini-cards">
+          <div className="mini-card">
+            <FiBriefcase />
+            <span>{pagination.totalCount}</span>
+            <p>Total Jobs</p>
+          </div>
+
+          <div className="mini-card">
+            <FiUsers />
+            <span>{jobs.filter((j) => j.status === "Open").length}</span>
+            <p>Open Roles</p>
+          </div>
+
+          <div className="mini-card">
+            <FiCalendar />
+            <span>{jobs.filter((j) => j.priority === "High").length}</span>
+            <p>High Priority</p>
+          </div>
+
+          <div className="mini-card">
+            <FiDollarSign />
+            <span>{jobs.length}</span>
+            <p>Active List</p>
           </div>
         </div>
 
-        <div className="filter-bar">
-          <div className="search-bar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search jobs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} id="job-search" />
+        <div className="filter-box">
+          <div className="search-box">
+            <FiSearch />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search jobs..."
+            />
           </div>
-          <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} id="job-status-filter">
-            <option value="All">All Status</option><option value="Open">Open</option><option value="Pending Approval">Pending Approval</option><option value="Closed">Closed</option><option value="On Hold">On Hold</option>
-          </select>
-          <select className="filter-select" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} id="job-priority-filter">
-            <option value="All">All Priority</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
-          </select>
+
+          <div className="select-wrap">
+            <FiFilter />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option>All</option>
+              <option>Open</option>
+              <option>Closed</option>
+              <option>Pending Approval</option>
+              <option>On Hold</option>
+            </select>
+          </div>
+
+          <div className="select-wrap">
+            <FiFilter />
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+            >
+              <option>All</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+
+          <button className="refresh-btn" onClick={fetchJobs}>
+            <FiRefreshCw />
+          </button>
         </div>
 
-        {/* Error state */}
         {error && (
-          <div style={{
-            background: "#fee2e2",
-            border: "1px solid #fca5a5",
-            borderRadius: "var(--radius-md)",
-            padding: "16px 20px",
-            marginBottom: "16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            color: "#dc2626",
-            fontSize: "14px",
-            fontWeight: 500,
-          }}>
-            <span>⚠️</span>
-            <span>{error}</span>
-            <button
-              onClick={fetchJobs}
-              style={{
-                marginLeft: "auto",
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                padding: "6px 14px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: "13px",
-              }}
-            >Retry</button>
+          <div className="error-box">
+            {error}
           </div>
         )}
 
-        {/* Loading state */}
         {loading ? (
           <Loader />
         ) : (
@@ -376,230 +476,120 @@ function Jobs() {
           />
         )}
 
-        {/* ── Create / Edit / View Modal ──────────────────────────────────── */}
         {showModal && (
-          <div className="modal-overlay" onClick={closeModal}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>
-                  {modalMode === "create" && "Create New Job"}
+          <div className="modal-wrap" onClick={closeModal}>
+            <div
+              className="modal-card"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-head">
+                <h3>
+                  {modalMode === "create" && "Create Job"}
                   {modalMode === "edit" && "Edit Job"}
-                  {modalMode === "view" && "Job Details"}
-                </h2>
-                <button className="modal-close" onClick={closeModal}>✕</button>
+                  {modalMode === "view" && "View Job"}
+                </h3>
+
+                <button onClick={closeModal}>
+                  <FiX />
+                </button>
               </div>
 
               {formError && (
-                <div style={{
-                  background: "#fee2e2",
-                  border: "1px solid #fca5a5",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  marginBottom: "16px",
-                  color: "#dc2626",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                }}>
-                  ⚠️ {formError}
+                <div className="error-box small">
+                  {formError}
                 </div>
               )}
 
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Job Title *</label>
-                  <input
-                    className="form-input"
-                    type="text"
-                    name="title"
-                    placeholder="e.g. Senior React Developer"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    disabled={modalMode === "view"}
-                    id="job-title-input"
-                  />
-                </div>
+              <div className="grid-2">
+                <input
+                  name="title"
+                  placeholder="Job Title"
+                  value={formData.title}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div className="form-group">
-                    <label className="form-label">Department</label>
-                    <select
-                      className="form-select"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-department-select"
-                    >
-                      <option value="">Select department</option>
-                      <option value="Engineering">Engineering</option>
-                      <option value="Design">Design</option>
-                      <option value="Product">Product</option>
-                      <option value="Analytics">Analytics</option>
-                      <option value="QA">QA</option>
-                      <option value="HR">HR</option>
-                      <option value="Sales">Sales</option>
-                      <option value="Marketing">Marketing</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Experience Level</label>
-                    <select
-                      className="form-select"
-                      name="experience_level"
-                      value={formData.experience_level}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-experience-select"
-                    >
-                      <option value="">Select level</option>
-                      <option value="Intern">Intern</option>
-                      <option value="Junior">Junior</option>
-                      <option value="Mid-level">Mid-level</option>
-                      <option value="Senior">Senior</option>
-                      <option value="Lead">Lead</option>
-                      <option value="Manager">Manager</option>
-                    </select>
-                  </div>
-                </div>
+                <input
+                  name="department"
+                  placeholder="Department"
+                  value={formData.department}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div className="form-group">
-                  <label className="form-label">Required Skills</label>
-                  <input
-                    className="form-input"
-                    type="text"
-                    name="skills"
-                    placeholder="React, Node.js, TypeScript (comma-separated)"
-                    value={formData.skills}
-                    onChange={handleInputChange}
-                    disabled={modalMode === "view"}
-                    id="job-skills-input"
-                  />
-                </div>
+                <input
+                  name="skills"
+                  placeholder="Skills"
+                  value={formData.skills}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div className="form-group">
-                    <label className="form-label">Budget Range</label>
-                    <input
-                      className="form-input"
-                      type="text"
-                      name="budget"
-                      placeholder="e.g. ₹18-22L"
-                      value={formData.budget}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-budget-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Openings</label>
-                    <input
-                      className="form-input"
-                      type="number"
-                      name="openings"
-                      min="1"
-                      value={formData.openings}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-openings-input"
-                    />
-                  </div>
-                </div>
+                <input
+                  name="budget"
+                  placeholder="Budget"
+                  value={formData.budget}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div className="form-group">
-                    <label className="form-label">Deadline</label>
-                    <input
-                      className="form-input"
-                      type="date"
-                      name="deadline"
-                      value={formData.deadline}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-deadline-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Priority</label>
-                    <select
-                      className="form-select"
-                      name="priority"
-                      value={formData.priority}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-priority-select"
-                    >
-                      <option value="High">High</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Low">Low</option>
-                    </select>
-                  </div>
-                </div>
+                <input
+                  type="date"
+                  name="deadline"
+                  value={formData.deadline}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <div className="form-group">
-                    <label className="form-label">Employment Type</label>
-                    <select
-                      className="form-select"
-                      name="employment_type"
-                      value={formData.employment_type}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-employment-select"
-                    >
-                      <option value="">Select type</option>
-                      <option value="Full-time">Full-time</option>
-                      <option value="Part-time">Part-time</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Internship">Internship</option>
-                      <option value="Freelance">Freelance</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Location</label>
-                    <input
-                      className="form-input"
-                      type="text"
-                      name="location"
-                      placeholder="e.g. Bangalore, Remote"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      disabled={modalMode === "view"}
-                      id="job-location-input"
-                    />
-                  </div>
-                </div>
+                <input
+                  name="location"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
 
-                <div className="form-group">
-                  <label className="form-label">Description</label>
-                  <textarea
-                    className="form-textarea"
-                    name="description"
-                    placeholder="Job description, responsibilities, etc."
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    disabled={modalMode === "view"}
-                    rows={3}
-                    id="job-description-input"
-                  />
-                </div>
+                <select
+                  name="priority"
+                  value={formData.priority}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                >
+                  <option>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
+                </select>
+
+                <input
+                  type="number"
+                  name="openings"
+                  value={formData.openings}
+                  onChange={onInput}
+                  disabled={modalMode === "view"}
+                />
               </div>
 
-              <div className="modal-footer">
-                <button className="btn btn-outline" onClick={closeModal}>
-                  {modalMode === "view" ? "Close" : "Cancel"}
+              <textarea
+                rows="4"
+                name="description"
+                placeholder="Description"
+                value={formData.description}
+                onChange={onInput}
+                disabled={modalMode === "view"}
+              />
+
+              <div className="modal-foot">
+                <button className="ghost-btn" onClick={closeModal}>
+                  Cancel
                 </button>
+
                 {modalMode !== "view" && (
                   <button
-                    className="btn btn-success"
-                    onClick={handleSubmit}
+                    className="save-btn"
+                    onClick={submitForm}
                     disabled={submitting}
-                    id="job-submit-btn"
                   >
-                    {submitting
-                      ? "Saving..."
-                      : modalMode === "edit"
-                        ? "Update Job"
-                        : "Create Job"}
+                    {submitting ? "Saving..." : "Save Job"}
                   </button>
                 )}
               </div>
@@ -607,30 +597,9 @@ function Jobs() {
           </div>
         )}
 
-        {/* ── Toast Notification ──────────────────────────────────────── */}
         {toast && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "24px",
-              right: "24px",
-              background: toast.type === "success"
-                ? "linear-gradient(135deg, #059669, #10b981)"
-                : "linear-gradient(135deg, #dc2626, #ef4444)",
-              color: "white",
-              padding: "14px 24px",
-              borderRadius: "12px",
-              fontWeight: 600,
-              fontSize: "14px",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-              zIndex: 9999,
-              animation: "slideUp 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            {toast.type === "success" ? "✅" : "❌"} {toast.message}
+          <div className={`toast ${toast.type}`}>
+            {toast.message}
           </div>
         )}
       </div>
