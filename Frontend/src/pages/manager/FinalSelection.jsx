@@ -1,26 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import api from "@/utils/api";
 import "@/styles/forms.css";
-
-const initialDecisions = [
-  { id: "D001", candidate: "Sneha Sharma", role: "Full Stack Developer", avgScore: 4.3, recommendation: "Strong Hire", status: "Pending Decision" },
-  { id: "D002", candidate: "Ravi Verma", role: "DevOps Engineer", avgScore: 2.8, recommendation: "Reject", status: "Rejected" },
-  { id: "D003", candidate: "Priyanka Das", role: "UI/UX Designer", avgScore: 4.5, recommendation: "Hire", status: "Offered" },
-];
 
 function FinalSelection() {
   const { setMobileOpen } = useOutletContext();
-  const [decisions, setDecisions] = useState(initialDecisions);
+  const [decisions, setDecisions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [offerDetails, setOfferDetails] = useState({ salary: "", joiningDate: "", notes: "" });
 
-  const handleDecision = (candidate, action) => {
+  useEffect(() => {
+    const fetchDecisions = async () => {
+      try {
+        const res = await api.get('/manager/decisions');
+        if (res.data.success) {
+          setDecisions(res.data.decisions || []);
+        }
+      } catch (error) {
+        console.error("Error fetching decisions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDecisions();
+  }, []);
+
+  const handleDecision = async (candidate, action) => {
     if (action === "Reject") {
       if (window.confirm(`Are you sure you want to reject ${candidate.candidate}?`)) {
-        setDecisions(decisions.map(d => d.id === candidate.id ? { ...d, status: "Rejected" } : d));
+        try {
+          const res = await api.post(`/manager/decisions/${candidate.id}`, { status: "Rejected" });
+          if (res.data.success) {
+            setDecisions(decisions.map(d => d.id === candidate.id ? { ...d, status: "Rejected" } : d));
+          }
+        } catch (error) {
+          console.error("Error rejecting candidate:", error);
+        }
       }
     } else if (action === "Offer") {
       setSelectedCandidate(candidate);
@@ -28,11 +47,20 @@ function FinalSelection() {
     }
   };
 
-  const submitOffer = (e) => {
+  const submitOffer = async (e) => {
     e.preventDefault();
-    setDecisions(decisions.map(d => d.id === selectedCandidate.id ? { ...d, status: "Offered" } : d));
-    setShowOfferModal(false);
-    setOfferDetails({ salary: "", joiningDate: "", notes: "" });
+    try {
+      const res = await api.post(`/manager/decisions/${selectedCandidate.id}`, { status: "Offered", offerDetails });
+      if (res.data.success) {
+        setDecisions(decisions.map(d => d.id === selectedCandidate.id ? { ...d, status: "Offered" } : d));
+        setShowOfferModal(false);
+        setOfferDetails({ salary: "", joiningDate: "", notes: "" });
+        alert("Offer request sent to HR!");
+      }
+    } catch (error) {
+      console.error("Error submitting offer:", error);
+      alert("Failed to submit offer.");
+    }
   };
 
   const getStatusBadge = (status) => {

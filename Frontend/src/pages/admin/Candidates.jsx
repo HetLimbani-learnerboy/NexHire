@@ -18,8 +18,8 @@ import {
 
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
-import Loader from "@/components/Loader";
-import "@/styles/forms.css";
+import Skeleton from "@/components/Skeleton";
+import "@/styles/userstyle.css";
 
 const API = "http://localhost:5001/api/candidates";
 
@@ -475,7 +475,16 @@ function Candidates() {
 
   if (loading)
     return (
-      <Loader fullPage />
+      <>
+        <Navbar
+          title="Candidates"
+          subtitle="Manage hiring pipeline"
+          onHamburgerClick={() => setMobileOpen(true)}
+        />
+        <div className="dashboard-page">
+          <Skeleton type="table" />
+        </div>
+      </>
     );
 
   return (

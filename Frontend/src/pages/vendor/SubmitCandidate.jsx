@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import api from "@/utils/api";
 import "@/styles/forms.css";
 
 function SubmitCandidate() {
@@ -13,22 +14,39 @@ function SubmitCandidate() {
     jobId: "",
   });
   const [resume, setResume] = useState(null);
+  const [activeJobs, setActiveJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
 
-  const activeJobs = [
-    { id: "J001", title: "Senior React Developer" },
-    { id: "J002", title: "Full Stack Developer" },
-    { id: "J003", title: "UI/UX Designer" }
-  ];
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await api.get('/vendor/jobs');
+        if (res.data.success) {
+          setActiveJobs(res.data.jobs || []);
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      } finally {
+        setLoadingJobs(false);
+      }
+    };
+    fetchJobs();
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!resume) {
-      alert("Please upload a resume.");
-      return;
+    try {
+      // Skipping resume upload for now per instructions
+      const res = await api.post('/vendor/candidates', formData);
+      if (res.data.success) {
+        alert(res.data.message || `Candidate ${formData.firstName} submitted successfully!`);
+        setFormData({ firstName: "", lastName: "", email: "", phone: "", jobId: "" });
+        setResume(null);
+      }
+    } catch (error) {
+      console.error("Error submitting candidate:", error);
+      alert("Failed to submit candidate.");
     }
-    alert(`Candidate ${formData.firstName} ${formData.lastName} submitted successfully for Job ${formData.jobId}! (Mock)`);
-    setFormData({ firstName: "", lastName: "", email: "", phone: "", jobId: "" });
-    setResume(null);
   };
 
   return (

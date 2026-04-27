@@ -12,6 +12,7 @@ const MOCK_USERS = {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Initialize from localStorage on mount
   useEffect(() => {
@@ -21,7 +22,18 @@ export function AuthProvider({ children }) {
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        // Normalize to include fields expected by UI components
+        const normalizedUser = {
+          ...parsedUser,
+          name: parsedUser.name || parsedUser.full_name || "User",
+          avatar: parsedUser.avatar || (parsedUser.full_name || "U")
+            .split(" ")
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+        };
+        setUser(normalizedUser);
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
@@ -29,6 +41,9 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("user");
       }
     }
+
+    // Mark initialization as complete regardless of outcome
+    setLoading(false);
   }, []);
 
   const login = (email, password) => {
@@ -53,12 +68,23 @@ export function AuthProvider({ children }) {
   };
 
   const setAuthFromAPI = (userData) => {
-    setUser(userData);
+    // Normalize API user data to include fields expected by UI components
+    const normalizedUser = {
+      ...userData,
+      name: userData.name || userData.full_name || "User",
+      avatar: userData.avatar || (userData.full_name || "U")
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2),
+    };
+    setUser(normalizedUser);
     setIsAuthenticated(true);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, setAuthFromAPI }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout, setAuthFromAPI }}>
       {children}
     </AuthContext.Provider>
   );

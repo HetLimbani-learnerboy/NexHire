@@ -1,17 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import api from "@/utils/api";
 import "@/styles/forms.css";
-
-const initialInterviews = [
-  { id: "I001", candidate: "Neha Gupta", role: "Data Analyst", date: "2026-04-25", mode: "Video Call", status: "Completed", feedbackStatus: "Pending" },
-  { id: "I002", candidate: "Sneha Sharma", role: "Full Stack Developer", date: "2026-04-24", mode: "In-Person", status: "Completed", feedbackStatus: "Submitted" },
-];
 
 function Feedback() {
   const { setMobileOpen } = useOutletContext();
-  const [interviews, setInterviews] = useState(initialInterviews);
+  const [interviews, setInterviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
 
@@ -23,10 +20,26 @@ function Feedback() {
     recommendation: "Hire"
   });
 
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      try {
+        const res = await api.get('/manager/interviews');
+        if (res.data.success) {
+          setInterviews(res.data.interviews || []);
+        }
+      } catch (error) {
+        console.error("Error fetching interviews:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInterviews();
+  }, []);
+
   const handleOpenFeedback = (interview) => {
     setSelectedInterview(interview);
     if (interview.feedbackStatus === "Submitted") {
-      // Mock pre-filled data
+      // Mock pre-filled data or fetch from backend
       setFeedbackForm({
         technicalScore: 4, cultureScore: 5, communicationScore: 4,
         remarks: "Excellent problem-solving skills. Fits well with team culture.", recommendation: "Hire"
@@ -37,10 +50,19 @@ function Feedback() {
     setShowFeedbackModal(true);
   };
 
-  const handleSubmitFeedback = (e) => {
+  const handleSubmitFeedback = async (e) => {
     e.preventDefault();
-    setInterviews(interviews.map(i => i.id === selectedInterview.id ? { ...i, feedbackStatus: "Submitted" } : i));
-    setShowFeedbackModal(false);
+    try {
+      const res = await api.post(`/manager/interviews/${selectedInterview.id}/feedback`, { feedback: feedbackForm });
+      if (res.data.success) {
+        setInterviews(interviews.map(i => i.id === selectedInterview.id ? { ...i, feedbackStatus: "Submitted" } : i));
+        setShowFeedbackModal(false);
+        alert(res.data.message || "Feedback submitted successfully!");
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("Failed to submit feedback.");
+    }
   };
 
   const renderStars = (rating, interactive, key, onChange) => (

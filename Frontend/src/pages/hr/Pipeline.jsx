@@ -12,11 +12,13 @@ import {
   FiLayers,
   FiCheckCircle,
   FiAlertCircle,
-  FiClock
+  FiClock,
+  FiChevronDown,
+  FiChevronUp
 } from "react-icons/fi";
 
 import Navbar from "@/components/Navbar";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import "@/styles/pipeline.css";
 import "@/styles/forms.css";
 
@@ -44,6 +46,7 @@ function Pipeline() {
   const [submitting, setSubmitting] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [expandedCards, setExpandedCards] = useState({});
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -151,6 +154,13 @@ function Pipeline() {
     }
 
     setDraggedId(null);
+  };
+
+  const toggleCard = (id) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   /* =====================================================
@@ -318,7 +328,7 @@ function Pipeline() {
 
         {/* BOARD */}
         {loading ? (
-          <Loader />
+          <Skeleton type="kanban" />
         ) : (
           <div className="pipeline-board">
             {stages.map((stage) => {
@@ -363,10 +373,18 @@ function Pipeline() {
                         }
                       >
                         <div className="pipeline-card-header">
-                          <h4>
-                            {c.full_name}
-                          </h4>
-
+                          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                            <h4>
+                              {c.full_name}
+                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => toggleCard(c.id)}
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}
+                            >
+                              {expandedCards[c.id] ? <FiChevronUp /> : <FiChevronDown />}
+                            </button>
+                          </div>
                           <span>
                             {new Date(
                               c.created_at
@@ -380,24 +398,28 @@ function Pipeline() {
                             "No Role"}
                         </p>
 
-                        <small>
-                          <FiLayers />
-                          {c.vendor_name ||
-                            "Direct Source"}
-                        </small>
+                        {expandedCards[c.id] && (
+                          <div className="pipeline-card-details" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                            <small>
+                              <FiLayers />
+                              {c.vendor_name ||
+                                "Direct Source"}
+                            </small>
 
-                        {c.email && (
-                          <small>
-                            <FiMail />
-                            {c.email}
-                          </small>
-                        )}
+                            {c.email && (
+                              <small>
+                                <FiMail />
+                                {c.email}
+                              </small>
+                            )}
 
-                        {c.phone && (
-                          <small>
-                            <FiPhone />
-                            {c.phone}
-                          </small>
+                            {c.phone && (
+                              <small>
+                                <FiPhone />
+                                {c.phone}
+                              </small>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}

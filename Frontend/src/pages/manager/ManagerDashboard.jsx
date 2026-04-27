@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import api from "@/utils/api";
 import "@/styles/dashboard.css";
 import "@/styles/forms.css";
 
@@ -8,16 +9,36 @@ function ManagerDashboard() {
   const { setMobileOpen } = useOutletContext();
   const managerName = localStorage.getItem("demoUser") || "Hiring Manager";
 
-  const actionItems = [
-    { id: 1, type: "Review", candidate: "Aditya Patel", role: "Senior React Developer", urgency: "High", time: "Pending 2 days" },
-    { id: 2, type: "Feedback", candidate: "Sneha Sharma", role: "Full Stack Developer", urgency: "Medium", time: "Pending 1 day" },
-    { id: 3, type: "Decision", candidate: "Priyanka Das", role: "UI/UX Designer", urgency: "High", time: "Due Today" }
-  ];
+  const [actionItems, setActionItems] = useState([]);
+  const [upcomingInterviews, setUpcomingInterviews] = useState([]);
+  const [stats, setStats] = useState({ pendingReviews: 0, upcomingInterviews: 0, offersExtended: 0 });
+  const [loading, setLoading] = useState(true);
 
-  const upcomingInterviews = [
-    { id: 1, name: "Neha Gupta", role: "Data Analyst", time: "11:00 AM Today", mode: "Video Call" },
-    { id: 2, name: "Ravi Verma", role: "DevOps Engineer", time: "02:30 PM Tomorrow", mode: "In-Person" }
-  ];
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get('/manager/dashboard');
+        if (res.data.success) {
+          setActionItems(res.data.actionItems || []);
+          setUpcomingInterviews(res.data.upcomingInterviews || []);
+          
+          // Calculate stats based on lists (or fetch them if backend provides)
+          setStats({
+            pendingReviews: res.data.actionItems?.filter(a => a.type === 'Review').length || 0,
+            upcomingInterviews: res.data.upcomingInterviews?.length || 0,
+            offersExtended: 1 // mock or fetch from actual stats
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching manager dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (loading) return <div style={{ padding: '20px' }}>Loading dashboard...</div>;
 
   return (
     <>
@@ -27,7 +48,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Pending Reviews</h3>
-              <p className="stat-number">4</p>
+              <p className="stat-number">{stats.pendingReviews}</p>
               <span className="stat-change negative">Action Required</span>
             </div>
             <div className="stat-icon purple">👁</div>
@@ -35,7 +56,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Upcoming Interviews</h3>
-              <p className="stat-number">2</p>
+              <p className="stat-number">{stats.upcomingInterviews}</p>
               <span className="stat-change positive">Next: 11:00 AM</span>
             </div>
             <div className="stat-icon orange">📅</div>
@@ -43,7 +64,7 @@ function ManagerDashboard() {
           <div className="stat-card">
             <div className="stat-info">
               <h3>Offers Extended</h3>
-              <p className="stat-number">1</p>
+              <p className="stat-number">{stats.offersExtended}</p>
               <span className="stat-change positive">This week</span>
             </div>
             <div className="stat-icon green">🎉</div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import Loader from "@/components/Loader";
+import Skeleton from "@/components/Skeleton";
 import "@/styles/reports.css";
 import "@/styles/forms.css";
 
@@ -67,7 +67,7 @@ function HRDashboard() {
       <>
         <Navbar title="HR Dashboard" subtitle="Overview of your recruitment pipeline" onHamburgerClick={() => setMobileOpen(true)} />
         <div className="dashboard-page" style={{ height: "calc(100vh - 80px)" }}>
-          <Loader />
+          <Skeleton type="dashboard" />
         </div>
       </>
     );
