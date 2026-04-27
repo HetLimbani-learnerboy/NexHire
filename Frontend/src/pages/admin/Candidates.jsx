@@ -1,180 +1,961 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import {
+  FiEye,
+  FiEdit2,
+  FiX,
+  FiArrowRight,
+  FiPlus,
+  FiSearch,
+  FiSave,
+  FiRefreshCw,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiBriefcase,
+  FiLayers
+} from "react-icons/fi";
+
 import Navbar from "@/components/Navbar";
 import Table from "@/components/Table";
+import Loader from "@/components/Loader";
 import "@/styles/forms.css";
 
-const initialCandidates = [
-  { id: 1, name: "Aditya Patel", email: "aditya@gmail.com", job: "Senior React Developer", vendor: "TechStaff Solutions", status: "Interview", resume: true, date: "2026-04-20", duplicate: false },
-  { id: 2, name: "Sneha Sharma", email: "sneha.s@gmail.com", job: "Full Stack Developer", vendor: "InnoRecruit Pvt Ltd", status: "Screened", resume: true, date: "2026-04-19", duplicate: false },
-  { id: 3, name: "Ravi Verma", email: "ravi.v@yahoo.com", job: "DevOps Engineer", vendor: "CloudHire Global", status: "Submitted", resume: true, date: "2026-04-22", duplicate: true },
-  { id: 4, name: "Neha Gupta", email: "neha.g@outlook.com", job: "Data Analyst", vendor: "SkillBridge HR", status: "Rejected", resume: true, date: "2026-04-15", duplicate: false },
-  { id: 5, name: "Vikram Joshi", email: "vikram.j@gmail.com", job: "Senior React Developer", vendor: "HireWave Tech", status: "Offered", resume: true, date: "2026-04-18", duplicate: false },
-  { id: 6, name: "Priyanka Das", email: "priyanka.d@gmail.com", job: "UI/UX Designer", vendor: "RecruitEdge", status: "Interview", resume: true, date: "2026-04-21", duplicate: false },
-  { id: 7, name: "Arjun Mehta", email: "arjun.m@gmail.com", job: "Backend Engineer (Java)", vendor: "TalentForce India", status: "Hired", resume: true, date: "2026-04-10", duplicate: false },
-  { id: 8, name: "Kavita Singh", email: "kavita.s@gmail.com", job: "Full Stack Developer", vendor: "ProHire Solutions", status: "Screened", resume: true, date: "2026-04-23", duplicate: false },
-  { id: 9, name: "Rohit Kumar", email: "rohit.k@gmail.com", job: "QA Automation Engineer", vendor: "TechStaff Solutions", status: "Submitted", resume: true, date: "2026-04-24", duplicate: true },
-  { id: 10, name: "Ananya Reddy", email: "ananya.r@gmail.com", job: "Product Manager", vendor: "InnoRecruit Pvt Ltd", status: "Interview", resume: true, date: "2026-04-17", duplicate: false },
-];
+const API = "http://localhost:5001/api/candidates";
 
 function Candidates() {
   const { setMobileOpen } = useOutletContext();
-  const [candidates, setCandidates] = useState(initialCandidates);
-  const [showModal, setShowModal] = useState(false);
+
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [btnLoading, setBtnLoading] = useState(false);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
+
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [resumeData, setResumeData] = useState(null);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const stages = ["Submitted", "Screened", "Interview", "Offered", "Hired"];
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleMoveStage = (id) => {
-    setCandidates(candidates.map(c => {
-      if (c.id === id && c.status !== "Rejected" && c.status !== "Hired") {
-        const nextIndex = stages.indexOf(c.status) + 1;
-        if (nextIndex < stages.length) {
-          return { ...c, status: stages[nextIndex] };
-        }
+  const stages = [
+    "Submitted",
+    "Screened",
+    "Interview",
+    "Offered",
+    "Hired"
+  ];
+
+  const emptyForm = {
+    full_name: "",
+    email: "",
+    phone: "",
+    vendor_id: "",
+    job_id: "",
+    skills: ""
+  };
+
+  const [form, setForm] = useState(emptyForm);
+
+  /* ===================================
+     LOAD DATA
+  =================================== */
+
+  const loadCandidates = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${API}?search=${searchQuery}&status=${filterStatus}`
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setCandidates(data.candidates || []);
       }
-      return c;
-    }));
+    } catch (err) {
+      setError("Failed to load candidates");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReject = (id) => {
-    setCandidates(candidates.map(c => c.id === id ? { ...c, status: "Rejected" } : c));
+  useEffect(() => {
+    loadCandidates();
+  }, [searchQuery, filterStatus]);
+
+  /* ===================================
+     TOAST
+  =================================== */
+
+  const showToast = (text) => {
+    setMessage(text);
+
+    setTimeout(() => {
+      setMessage("");
+    }, 2500);
   };
 
-  const filtered = candidates.filter((c) => {
-    const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.job.toLowerCase().includes(searchQuery.toLowerCase()) || c.vendor.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStatus = filterStatus === "All" || c.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
+  /* ===================================
+     FORM CHANGE
+  =================================== */
 
-  const getStatusBadge = (s) => {
-    const m = { Submitted: "badge-neutral", Screened: "badge-info", Interview: "badge-warning", Offered: "badge-success", Hired: "badge-success", Rejected: "badge-danger" };
-    return <span className={`badge ${m[s] || "badge-neutral"}`}>{s}</span>;
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const statusCounts = candidates.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, {});
+  /* ===================================
+     ADD
+  =================================== */
 
-  const columns = ["Candidate", "Applied For", "Vendor", "Submitted", "Resume", "Status", "Actions"];
+  const submitCandidate = async () => {
+    try {
+      setBtnLoading(true);
 
-  const renderRow = (c) => (
-    <tr key={c.id}>
+      const res = await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify(form)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setShowAddModal(false);
+        setForm(emptyForm);
+        showToast("Candidate submitted");
+        loadCandidates();
+      } else {
+        setError(data.message);
+      }
+    } catch {
+      setError("Failed to submit");
+    } finally {
+      setBtnLoading(false);
+    }
+  };
+
+  /* ===================================
+     EDIT OPEN
+  =================================== */
+
+  const openEdit = (row) => {
+    setSelectedCandidate(row);
+
+    setForm({
+      full_name: row.name || "",
+      email: row.email || "",
+      phone: row.phone || "",
+      vendor_id:
+        row.vendor_id || "",
+      job_id:
+        row.job_id || "",
+      skills:
+        row.skills || ""
+    });
+
+    setShowEditModal(true);
+  };
+
+  /* ===================================
+     EDIT SAVE
+  =================================== */
+
+  const updateCandidate = async () => {
+    try {
+      setBtnLoading(true);
+
+      const res = await fetch(
+        `${API}/${selectedCandidate.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify(form)
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setShowEditModal(false);
+        showToast("Candidate updated");
+        loadCandidates();
+      } else {
+        setError(data.message);
+      }
+    } catch {
+      setError("Update failed");
+    } finally {
+      setBtnLoading(false);
+    }
+  };
+
+  /* ===================================
+     REJECT
+  =================================== */
+
+  const rejectCandidate = async (
+    id
+  ) => {
+    await fetch(
+      `${API}/${id}/reject`,
+      { method: "PUT" }
+    );
+
+    showToast("Candidate rejected");
+    loadCandidates();
+  };
+
+  /* ===================================
+     NEXT STAGE
+  =================================== */
+
+  const moveStage = async (
+    row
+  ) => {
+    const index =
+      stages.indexOf(
+        row.status
+      );
+
+    if (
+      index === -1 ||
+      row.status ===
+        "Rejected" ||
+      row.status ===
+        "Hired"
+    )
+      return;
+
+    const next =
+      stages[index + 1];
+
+    await fetch(
+      `${API}/${row.id}/status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          status: next
+        })
+      }
+    );
+
+    showToast(
+      `Moved to ${next}`
+    );
+
+    loadCandidates();
+  };
+
+  /* ===================================
+     RESUME
+  =================================== */
+
+  const openResume = async (
+    row
+  ) => {
+    setSelectedCandidate(row);
+
+    const res = await fetch(
+      `${API}/${row.id}/resume`
+    );
+
+    const data =
+      await res.json();
+
+    if (data.success) {
+      setResumeData(
+        data.data
+      );
+
+      setShowResumeModal(
+        true
+      );
+    }
+  };
+
+  /* ===================================
+     COUNTS
+  =================================== */
+
+  const statusCounts =
+    useMemo(() => {
+      const obj = {};
+
+      candidates.forEach(
+        (item) => {
+          obj[
+            item.status
+          ] =
+            (obj[
+              item.status
+            ] || 0) + 1;
+        }
+      );
+
+      return obj;
+    }, [candidates]);
+
+  /* ===================================
+     BADGE
+  =================================== */
+
+  const badge = (status) => {
+    const cls = {
+      Submitted:
+        "badge-neutral",
+      Screened:
+        "badge-info",
+      Interview:
+        "badge-warning",
+      Offered:
+        "badge-success",
+      Hired:
+        "badge-success",
+      Rejected:
+        "badge-danger"
+    };
+
+    return (
+      <span
+        className={`badge ${cls[status]}`}
+      >
+        {status}
+      </span>
+    );
+  };
+
+  /* ===================================
+     TABLE
+  =================================== */
+
+  const columns = [
+    "Candidate",
+    "Job",
+    "Vendor",
+    "Date",
+    "Resume",
+    "Status",
+    "Actions"
+  ];
+
+  const renderRow = (
+    row
+  ) => (
+    <tr key={row.id}>
       <td>
         <div className="table-user">
-          <div className="table-user-avatar">{c.name.split(" ").map(w=>w[0]).join("")}</div>
+          <div className="table-user-avatar">
+            {row.name
+              ?.split(
+                " "
+              )
+              .map(
+                (w) =>
+                  w[0]
+              )
+              .join(
+                ""
+              )}
+          </div>
+
           <div className="table-user-info">
-            <h4 style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              {c.name}
-              {c.duplicate && <span className="badge badge-danger" style={{ fontSize: "0.7rem", padding: "0.1rem 0.3rem" }}>Duplicate</span>}
+            <h4>
+              {row.name}
             </h4>
-            <p>{c.email}</p>
+            <p>
+              {row.email}
+            </p>
           </div>
         </div>
       </td>
-      <td style={{fontWeight:500}}>{c.job}</td>
-      <td style={{fontSize:13, color:"var(--text-secondary)"}}>{c.vendor}</td>
-      <td>{new Date(c.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</td>
+
+      <td>{row.job}</td>
+      <td>{row.vendor}</td>
+
       <td>
-        {c.resume ? (
-          <span 
-            className="badge badge-info" 
-            style={{ cursor: "pointer", textDecoration: "underline" }}
-            onClick={() => { setSelectedCandidate(c); setShowResumeModal(true); }}
-          >
-            📄 Parse
-          </span>
-        ) : (
-          <span className="badge badge-neutral">No file</span>
+        {new Date(
+          row.date
+        ).toLocaleDateString()}
+      </td>
+
+      <td>
+        <button
+          className="badge badge-info"
+          onClick={() =>
+            openResume(
+              row
+            )
+          }
+        >
+          Parse
+        </button>
+      </td>
+
+      <td>
+        {badge(
+          row.status
         )}
       </td>
-      <td>{getStatusBadge(c.status)}</td>
+
       <td>
         <div className="table-actions">
-          <button className="table-action-btn" title="View" onClick={() => { setSelectedCandidate(c); setShowResumeModal(true); }}>👁</button>
-          <button className="table-action-btn" title="Move Stage" onClick={() => handleMoveStage(c.id)}>↗️</button>
-          <button className="table-action-btn danger" title="Reject" onClick={() => handleReject(c.id)}>✕</button>
+
+          <button
+            className="table-action-btn"
+            title="View Resume"
+            onClick={() =>
+              openResume(
+                row
+              )
+            }
+          >
+            <FiEye />
+          </button>
+
+          <button
+            className="table-action-btn"
+            title="Edit"
+            onClick={() =>
+              openEdit(
+                row
+              )
+            }
+          >
+            <FiEdit2 />
+          </button>
+
+          <button
+            className="table-action-btn"
+            title="Move Stage"
+            onClick={() =>
+              moveStage(
+                row
+              )
+            }
+          >
+            <FiArrowRight />
+          </button>
+
+          <button
+            className="table-action-btn danger"
+            title="Reject"
+            onClick={() =>
+              rejectCandidate(
+                row.id
+              )
+            }
+          >
+            <FiX />
+          </button>
+
         </div>
       </td>
     </tr>
   );
 
+  if (loading)
+    return (
+      <Loader fullPage />
+    );
+
   return (
     <>
-      <Navbar title="Candidates" subtitle="Track candidate submissions and hiring pipeline" onHamburgerClick={() => setMobileOpen(true)} />
+      <Navbar
+        title="Candidates"
+        subtitle="Manage hiring pipeline"
+        onHamburgerClick={() =>
+          setMobileOpen(
+            true
+          )
+        }
+      />
+
       <div className="dashboard-page">
-        <div className="stats-row" style={{ marginBottom: 24 }}>
-          {["Submitted", "Screened", "Interview", "Offered", "Hired", "Rejected"].map((s) => (
-            <div key={s} className="stat-card" style={{ cursor: "pointer" }} onClick={() => setFilterStatus(filterStatus === s ? "All" : s)}>
-              <div className="stat-info"><h3>{s}</h3><p className="stat-number">{statusCounts[s] || 0}</p></div>
-            </div>
-          ))}
+
+        {message && (
+          <div className="success-box">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="error-box">
+            {error}
+          </div>
+        )}
+
+        {/* Stats */}
+
+        <div className="stats-row">
+
+          {[
+            "Submitted",
+            "Screened",
+            "Interview",
+            "Offered",
+            "Hired",
+            "Rejected"
+          ].map(
+            (
+              item
+            ) => (
+              <div
+                key={
+                  item
+                }
+                className="stat-card"
+                onClick={() =>
+                  setFilterStatus(
+                    filterStatus ===
+                      item
+                      ? "All"
+                      : item
+                  )
+                }
+              >
+                <div className="stat-info">
+                  <h3>
+                    {item}
+                  </h3>
+
+                  <p className="stat-number">
+                    {statusCounts[
+                      item
+                    ] ||
+                      0}
+                  </p>
+                </div>
+              </div>
+            )
+          )}
+
         </div>
+
+        {/* Header */}
 
         <div className="page-header">
-          <div className="page-header-left"><h2>All Candidates ({filtered.length})</h2><p>View submissions, move pipeline stages, manage profiles</p></div>
-          <div className="page-header-actions"><button className="btn btn-primary" onClick={() => setShowModal(true)} id="add-candidate-btn">+ Submit Candidate</button></div>
+          <div>
+            <h2>
+              Candidates (
+              {
+                candidates.length
+              }
+              )
+            </h2>
+
+            <p>
+              Search,
+              edit,
+              track
+              and
+              manage
+              candidates
+            </p>
+          </div>
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              setShowAddModal(
+                true
+              )
+            }
+          >
+            <FiPlus />
+            Add Candidate
+          </button>
         </div>
+
+        {/* Filters */}
 
         <div className="filter-bar">
+
           <div className="search-bar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search candidates, jobs, vendors..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} id="candidate-search" />
+            <FiSearch />
+
+            <input
+              type="text"
+              placeholder="Search candidate / job / vendor"
+              value={
+                searchQuery
+              }
+              onChange={(
+                e
+              ) =>
+                setSearchQuery(
+                  e
+                    .target
+                    .value
+                )
+              }
+            />
           </div>
-          <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} id="candidate-status-filter">
-            <option value="All">All Status</option><option value="Submitted">Submitted</option><option value="Screened">Screened</option><option value="Interview">Interview</option><option value="Offered">Offered</option><option value="Hired">Hired</option><option value="Rejected">Rejected</option>
+
+          <select
+            className="filter-select"
+            value={
+              filterStatus
+            }
+            onChange={(
+              e
+            ) =>
+              setFilterStatus(
+                e
+                  .target
+                  .value
+              )
+            }
+          >
+            <option>
+              All
+            </option>
+            <option>
+              Submitted
+            </option>
+            <option>
+              Screened
+            </option>
+            <option>
+              Interview
+            </option>
+            <option>
+              Offered
+            </option>
+            <option>
+              Hired
+            </option>
+            <option>
+              Rejected
+            </option>
           </select>
+
+          <button
+            className="btn btn-outline"
+            onClick={
+              loadCandidates
+            }
+          >
+            <FiRefreshCw />
+          </button>
+
         </div>
 
-        <Table columns={columns} data={filtered} renderRow={renderRow} currentPage={currentPage} totalPages={1} onPageChange={setCurrentPage} />
+        {/* Table */}
 
-        {showModal && (
-          <div className="modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="modal-content slide-up" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header"><h2>Submit New Candidate</h2><button className="modal-close" onClick={() => setShowModal(false)}>✕</button></div>
+        <Table
+          columns={
+            columns
+          }
+          data={
+            candidates
+          }
+          renderRow={
+            renderRow
+          }
+          currentPage={1}
+          totalPages={1}
+          onPageChange={() => {}}
+        />
+
+        {/* =====================
+            FORM MODAL
+        ===================== */}
+
+        {(showAddModal ||
+          showEditModal) && (
+          <div
+            className="modal-overlay"
+            onClick={() => {
+              setShowAddModal(
+                false
+              );
+              setShowEditModal(
+                false
+              );
+            }}
+          >
+            <div
+              className="modal-content"
+              onClick={(
+                e
+              ) =>
+                e.stopPropagation()
+              }
+            >
+              <div className="modal-header">
+                <h2>
+                  {showEditModal
+                    ? "Edit Candidate"
+                    : "Add Candidate"}
+                </h2>
+
+                <button
+                  className="modal-close"
+                  onClick={() => {
+                    setShowAddModal(
+                      false
+                    );
+                    setShowEditModal(
+                      false
+                    );
+                  }}
+                >
+                  <FiX />
+                </button>
+              </div>
+
               <div className="modal-body">
-                <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" type="text" placeholder="Enter candidate name" id="candidate-name-input" /></div>
-                <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" placeholder="Enter email address" id="candidate-email-input" /></div>
-                <div className="form-group"><label className="form-label">Job Position</label><select className="form-select" id="candidate-job-select"><option value="">Select job</option><option>Senior React Developer</option><option>DevOps Engineer</option><option>Data Analyst</option><option>Full Stack Developer</option><option>UI/UX Designer</option></select></div>
-                <div className="form-group"><label className="form-label">Resume Upload</label><input className="form-input" type="file" accept=".pdf,.doc,.docx" id="candidate-resume-upload" /></div>
-                <div className="form-group"><label className="form-label">Notes</label><textarea className="form-textarea" placeholder="Add any notes" id="candidate-notes-input" /></div>
+
+                <input
+                  name="full_name"
+                  className="form-input"
+                  placeholder="Full Name"
+                  value={
+                    form.full_name
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+                <input
+                  name="email"
+                  className="form-input"
+                  placeholder="Email"
+                  value={
+                    form.email
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+                <input
+                  name="phone"
+                  className="form-input"
+                  placeholder="Phone"
+                  value={
+                    form.phone
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+                <input
+                  name="vendor_id"
+                  className="form-input"
+                  placeholder="Vendor ID"
+                  value={
+                    form.vendor_id
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+                <input
+                  name="job_id"
+                  className="form-input"
+                  placeholder="Job ID"
+                  value={
+                    form.job_id
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+                <input
+                  name="skills"
+                  className="form-input"
+                  placeholder="Skills"
+                  value={
+                    form.skills
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
               </div>
-              <div className="modal-footer"><button className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button><button className="btn btn-success" id="candidate-submit-btn">Submit Candidate</button></div>
+
+              <div className="modal-footer">
+
+                <button
+                  className="btn btn-outline"
+                  onClick={() => {
+                    setShowAddModal(
+                      false
+                    );
+                    setShowEditModal(
+                      false
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-success"
+                  disabled={
+                    btnLoading
+                  }
+                  onClick={
+                    showEditModal
+                      ? updateCandidate
+                      : submitCandidate
+                  }
+                >
+                  {btnLoading ? (
+                    <>
+                      <Loader
+                        size={
+                          18
+                        }
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <FiSave />
+                      Save
+                    </>
+                  )}
+                </button>
+
+              </div>
             </div>
           </div>
         )}
 
-        {showResumeModal && selectedCandidate && (
-          <div className="modal-overlay" onClick={() => setShowResumeModal(false)}>
-            <div className="modal-content slide-up" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
-              <div className="modal-header"><h2>Resume Parsing Data: {selectedCandidate.name}</h2><button className="modal-close" onClick={() => setShowResumeModal(false)}>✕</button></div>
-              <div className="modal-body" style={{ maxHeight: "60vh", overflowY: "auto" }}>
-                <div style={{ background: "var(--gray-50)", padding: "1rem", borderRadius: "var(--radius-sm)", marginBottom: "1rem", border: "1px solid var(--gray-200)" }}>
-                  <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--navy-600)" }}>Extracted Skills</h4>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {["React", "Node.js", "MongoDB", "Express", "TypeScript"].map(skill => (
-                      <span key={skill} style={{ padding: "0.25rem 0.75rem", background: "var(--emerald-100)", color: "var(--emerald-600)", borderRadius: "var(--radius-full)", fontSize: "0.85rem", fontWeight: "500" }}>{skill}</span>
-                    ))}
+        {/* =====================
+            RESUME MODAL
+        ===================== */}
+
+        {showResumeModal &&
+          resumeData && (
+            <div
+              className="modal-overlay"
+              onClick={() =>
+                setShowResumeModal(
+                  false
+                )
+              }
+            >
+              <div
+                className="modal-content"
+                onClick={(
+                  e
+                ) =>
+                  e.stopPropagation()
+                }
+              >
+                <div className="modal-header">
+                  <h2>
+                    Resume Details
+                  </h2>
+
+                  <button
+                    className="modal-close"
+                    onClick={() =>
+                      setShowResumeModal(
+                        false
+                      )
+                    }
+                  >
+                    <FiX />
+                  </button>
+                </div>
+
+                <div className="modal-body">
+
+                  <p>
+                    <FiUser />{" "}
+                    {
+                      resumeData.name
+                    }
+                  </p>
+
+                  <p>
+                    <FiBriefcase />{" "}
+                    {
+                      resumeData.experience
+                    }
+                  </p>
+
+                  <p>
+                    <FiLayers />{" "}
+                    {
+                      resumeData.company
+                    }
+                  </p>
+
+                  <p>
+                    <FiMail />{" "}
+                    {
+                      selectedCandidate.email
+                    }
+                  </p>
+
+                  <div className="skill-wrap">
+                    {resumeData.skills.map(
+                      (
+                        item,
+                        index
+                      ) => (
+                        <span
+                          key={
+                            index
+                          }
+                          className="badge badge-info"
+                        >
+                          {
+                            item
+                          }
+                        </span>
+                      )
+                    )}
                   </div>
+
                 </div>
-                <div style={{ background: "var(--gray-50)", padding: "1rem", borderRadius: "var(--radius-sm)", marginBottom: "1rem", border: "1px solid var(--gray-200)" }}>
-                  <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--navy-600)" }}>Experience</h4>
-                  <ul style={{ paddingLeft: "1.2rem", margin: 0, fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                    <li style={{ marginBottom: "0.5rem" }}><strong>Senior Developer</strong> at TechCorp (2022 - Present)</li>
-                    <li><strong>Frontend Engineer</strong> at StartUp Inc (2019 - 2022)</li>
-                  </ul>
+
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-outline"
+                    onClick={() =>
+                      setShowResumeModal(
+                        false
+                      )
+                    }
+                  >
+                    Close
+                  </button>
                 </div>
-                <div style={{ background: "var(--gray-50)", padding: "1rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--gray-200)" }}>
-                  <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--navy-600)" }}>Education</h4>
-                  <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-secondary)" }}>B.Tech in Computer Science - XYZ University (2019)</p>
-                </div>
+
               </div>
-              <div className="modal-footer"><button className="btn btn-outline" onClick={() => setShowResumeModal(false)}>Close</button></div>
             </div>
-          </div>
-        )}
+          )}
+
       </div>
     </>
   );
