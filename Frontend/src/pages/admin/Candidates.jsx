@@ -155,7 +155,7 @@ function Candidates() {
     setSelectedCandidate(row);
 
     setForm({
-      full_name: row.name || "",
+      full_name: row.full_name || "",
       email: row.email || "",
       phone: row.phone || "",
       vendor_id:
@@ -365,7 +365,7 @@ function Candidates() {
       <td>
         <div className="table-user">
           <div className="table-user-avatar">
-            {row.name
+            {row.full_name
               ?.split(
                 " "
               )
@@ -380,7 +380,7 @@ function Candidates() {
 
           <div className="table-user-info">
             <h4>
-              {row.name}
+              {row.full_name}
             </h4>
             <p>
               {row.email}
@@ -389,12 +389,12 @@ function Candidates() {
         </div>
       </td>
 
-      <td>{row.job}</td>
-      <td>{row.vendor}</td>
+      <td>{row.job_title}</td>
+      <td>{row.vendor_name}</td>
 
       <td>
         {new Date(
-          row.date
+          row.created_at
         ).toLocaleDateString()}
       </td>
 
