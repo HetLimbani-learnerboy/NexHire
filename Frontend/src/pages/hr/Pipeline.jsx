@@ -371,20 +371,14 @@ function Pipeline() {
                             c.id
                           )
                         }
+                        onClick={() => toggleCard(c.id)}
+                        style={{ cursor: "pointer" }}
                       >
                         <div className="pipeline-card-header">
-                          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                            <h4>
-                              {c.full_name}
-                            </h4>
-                            <button
-                              type="button"
-                              onClick={() => toggleCard(c.id)}
-                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}
-                            >
-                              {expandedCards[c.id] ? <FiChevronUp /> : <FiChevronDown />}
-                            </button>
-                          </div>
+                          <h4>
+                            {c.full_name}
+                          </h4>
+
                           <span>
                             {new Date(
                               c.created_at
@@ -399,7 +393,7 @@ function Pipeline() {
                         </p>
 
                         {expandedCards[c.id] && (
-                          <div className="pipeline-card-details" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                          <div className="pipeline-card-details" style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", borderTop: "1px dashed #e2e8f0", paddingTop: "10px" }}>
                             <small>
                               <FiLayers />
                               {c.vendor_name ||
@@ -421,6 +415,10 @@ function Pipeline() {
                             )}
                           </div>
                         )}
+                        
+                        <div style={{ textAlign: "center", color: "#94a3b8", marginTop: expandedCards[c.id] ? "8px" : "4px", fontSize: "16px" }}>
+                          {expandedCards[c.id] ? <FiChevronUp /> : <FiChevronDown />}
+                        </div>
                       </div>
                     ))}
 
